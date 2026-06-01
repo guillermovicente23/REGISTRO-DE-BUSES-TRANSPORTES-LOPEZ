@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de Autobuses - QR</title>
+    <link rel="stylesheet" href="./css/style.css">
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+</head>
+<body>
+
+    <header>
+        <h1>Control de Entradas y Salidas de Autobuses</h1>
+        <p>Sistema de Escaneo QR para Transporte Extraurbano</p>
+    </header>
+
+    <main class="container">
+        <section class="scanner-section">
+            <h2><span class="icon">📷</span> Escáner de Código QR</h2>
+            <div id="reader"></div>
+            
+            <div id="result-container" class="hidden">
+                <p><strong>Autobús Detectado:</strong> <span id="qr-data">Ninguno</span></p>
+                <div class="actions">
+                    <button id="btn-entrada" class="btn btn-entrada">Marcar Entrada</button>
+                    <button id="btn-salida" class="btn btn-salida">Marcar Salida</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="logs-section">
+            <h2><span class="icon">📋</span> Registro de Movimientos (Hoy)</h2>
+            <div class="table-responsive">
+                <table id="logs-table">
+                    <thead>
+                        <tr>
+                            <th>Fecha y Hora</th>
+                            <th>Identificador del Bus</th>
+                            <th>Tipo de Evento</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 - Sistema de Control de Transportes</p>
+    </footer>
+
+    <script src="./js/script.js"></script>
+</body>
+</html>
