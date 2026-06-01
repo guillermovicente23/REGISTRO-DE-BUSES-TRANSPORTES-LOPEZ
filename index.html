@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Control de Autobuses - QR</title>
-    <link rel="stylesheet" href="./css/style.css">
+    <!-- Ruta optimizada para GitHub Pages (sin el ./) -->
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Librería para escanear QR desde la cámara -->
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 </head>
 <body>
@@ -15,6 +17,7 @@
     </header>
 
     <main class="container">
+        <!-- Sección del Escáner -->
         <section class="scanner-section">
             <h2><span class="icon">📷</span> Escáner de Código QR</h2>
             <div id="reader"></div>
@@ -28,6 +31,7 @@
             </div>
         </section>
 
+        <!-- Sección de Registro Temporal -->
         <section class="logs-section">
             <h2><span class="icon">📋</span> Registro de Movimientos (Hoy)</h2>
             <div class="table-responsive">
@@ -40,7 +44,8 @@
                         </tr>
                     </thead>
                     <tbody>
-                        </tbody>
+                        <!-- Los datos escaneados se agregarán aquí -->
+                    </tbody>
                 </table>
             </div>
         </section>
@@ -50,6 +55,7 @@
         <p>&copy; 2026 - Sistema de Control de Transportes</p>
     </footer>
 
-    <script src="./js/script.js"></script>
+    <!-- Ruta optimizada para GitHub Pages (sin el ./) -->
+    <script src="js/script.js"></script>
 </body>
 </html>
