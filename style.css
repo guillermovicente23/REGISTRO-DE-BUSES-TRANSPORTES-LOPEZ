@@ -26,7 +26,7 @@ header h1 {
 }
 
 .container {
-    max-width: 900px;
+    max-width: 1000px;
     margin: 2rem auto;
     padding: 0 1rem;
     display: grid;
@@ -36,7 +36,7 @@ header h1 {
 
 @media (min-width: 768px) {
     .container {
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 1.2fr 1fr;
     }
 }
 
@@ -66,57 +66,105 @@ section h2 {
 
 #result-container {
     margin-top: 1.5rem;
-    padding: 1rem;
+    padding: 1.5rem;
     background: #edf2f7;
     border-radius: 6px;
+}
+
+.bus-detectado-alert {
     text-align: center;
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+    background: white;
+    padding: 0.5rem;
+    border-radius: 6px;
+    border-left: 5px solid #1a365d;
 }
 
 #qr-data {
-    font-size: 1.1rem;
     color: #2b6cb0;
     font-weight: bold;
 }
 
-.hidden {
-    display: none;
+.instruccion {
+    font-weight: 600;
+    margin-bottom: 1rem;
+    text-align: center;
+    color: #4a5568;
 }
 
-/* Botones */
+#actividad-seleccionada {
+    background: #1a365d;
+    color: white;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Grid de Botones de Actividad */
+.grid-acciones {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+}
+
+@media (min-width: 480px) {
+    .grid-acciones {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+/* Botones Base */
+.btn {
+    padding: 0.85rem 1rem;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.1s, filter 0.2s;
+    font-size: 0.95rem;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.btn:active {
+    transform: scale(0.98);
+}
+
+.btn:hover {
+    filter: brightness(0.9);
+}
+
+/* Nuevos colores solicitados */
+.btn-ruta { background-color: #2e7d32; color: white; }        /* Verde Ruta */
+.btn-taller { background-color: #c62828; color: white; }      /* Rojo Taller */
+.btn-apoyo { background-color: #d7ccc8; color: #4e342e; }     /* Beige Apoyo */
+.btn-viaje { background-color: #1565c0; color: white; }       /* Azul Viaje */
+.btn-lavado { background-color: #4dd0e1; color: #004d40; }     /* Celeste Lavado */
+
+/* Botones Entrada / Salida */
 .actions {
     display: flex;
     gap: 1rem;
     margin-top: 1rem;
-    justify-content: center;
 }
 
-.btn {
-    padding: 0.75rem 1.5rem;
+.btn-entrada { background-color: #2f855a; color: white; width: 100%; font-size: 1.1rem; padding: 1.2rem;}
+.btn-salida { background-color: #e53e3e; color: white; width: 100%; font-size: 1.1rem; padding: 1.2rem;}
+
+.btn-regresar {
+    display: block;
+    margin: 1.5rem auto 0 auto;
+    background: none;
     border: none;
-    border-radius: 5px;
-    font-weight: bold;
+    color: #718096;
     cursor: pointer;
-    transition: background 0.2s;
-    font-size: 1rem;
-    width: 100%;
-}
-
-.btn-entrada {
-    background-color: #2f855a;
-    color: white;
-}
-
-.btn-entrada:hover {
-    background-color: #22543d;
-}
-
-.btn-salida {
-    background-color: #c53030;
-    color: white;
-}
-
-.btn-salida:hover {
-    background-color: #742a2a;
+    text-decoration: underline;
+    font-size: 0.9rem;
 }
 
 /* Tabla de Registros */
