@@ -1,65 +1,88 @@
 let html5QrcodeScanner;
 let busDetectado = "";
+let actividadSeleccionada = "";
 
-// Esperar a que el HTML cargue por completo
 document.addEventListener("DOMContentLoaded", () => {
-    // Inicializar el escáner QR de la librería
+    // Inicializar el escáner QR
     html5QrcodeScanner = new Html5QrcodeScanner(
         "reader", 
         { fps: 10, qrbox: { width: 250, height: 250 } },
-        /* verbose= */ false
+        false
     );
     
-    // Ejecutar funciones al detectar un código exitoso
     html5QrcodeScanner.render(onScanSuccess, onScanFailure);
 
-    // Asignar eventos a los botones de Entrada y Salida
+    // Asignar eventos de Entrada y Salida finales
     document.getElementById("btn-entrada").addEventListener("click", () => registrarMovimiento("ENTRADA"));
     document.getElementById("btn-salida").addEventListener("click", () => registrarMovimiento("SALIDA"));
 });
 
-// Qué pasa cuando se escanea exitosamente un QR
+// Cuando se lee el QR con éxito
 function onScanSuccess(decodedText, decodedResult) {
-    busDetectado = decodedText; // Guardamos lo que dice el QR (Ej: "BUS-05")
-    
-    // Mostrar el contenedor de resultados y el nombre del bus
+    busDetectado = decodedText;
     document.getElementById("qr-data").innerText = decodedText;
+    
+    // Mostramos el contenedor y nos aseguramos de arrancar en el Paso 1 (Actividades)
     document.getElementById("result-container").classList.remove("hidden");
+    regresarAPaso1();
 }
 
-// Manejo de errores de lectura (pasa constantemente mientras busca códigos, se puede dejar vacío)
 function onScanFailure(error) {
-    // No ponemos alertas aquí para evitar saturar la pantalla de errores mientras busca.
+    // Silencioso para evitar alertas infinitas en pantalla
 }
 
-// Función para registrar el movimiento en la tabla visual
-function registrarMovimiento(tipo) {
-    if (!busDetectado) return;
+// Paso 1: Guardar qué actividad se eligió y saltar a Entrada/Salida
+function seleccionarActividad(actividad) {
+    actividadSeleccionada = actividad;
+    
+    // Colocar el nombre de la actividad en la etiqueta de guía
+    document.getElementById("actividad-seleccionada").innerText = actividad;
+    
+    // Intercambiar pantallas visuales
+    document.getElementById("step-actividad").classList.add("hidden");
+    document.getElementById("step-direccion").classList.remove("hidden");
+}
+
+// Permite al usuario volver atrás si se equivocó de botón de color
+function regresarAPaso1() {
+    actividadSeleccionada = "";
+    document.getElementById("step-direccion").classList.add("hidden");
+    document.getElementById("step-actividad").classList.remove("hidden");
+}
+
+// Paso 2: Registro definitivo e inserción en la tabla
+function registrarMovimiento(tipoMovimiento) {
+    if (!busDetectado || !actividadSeleccionada) return;
 
     const tablaBody = document.querySelector("#logs-table tbody");
     const ahora = new Date();
-    
-    // Formatear la fecha y hora de manera legible
     const fechaHoraStr = ahora.toLocaleDateString() + " " + ahora.toLocaleTimeString();
 
-    // Crear una nueva fila en la tabla
     const nuevaFila = document.createElement("tr");
     
-    // Aplicar un color sutil según el tipo de acción
-    const estiloTipo = tipo === "ENTRADA" ? "color: #2f855a; font-weight: bold;" : "color: #c53030; font-weight: bold;";
+    // Colores visuales en la tabla según el tipo de movimiento
+    const estiloMovimiento = tipoMovimiento === "ENTRADA" ? "color: #2f855a; font-weight: bold;" : "color: #c53030; font-weight: bold;";
+    
+    // Estilos sutiles para la columna de actividad en la tabla
+    let badgeColor = "";
+    if(actividadSeleccionada === 'RUTA') badgeColor = "color: #2e7d32;";
+    if(actividadSeleccionada === 'TALLER') badgeColor = "color: #c62828;";
+    if(actividadSeleccionada === 'VIAJE') badgeColor = "color: #1565c0;";
 
     nuevaFila.innerHTML = `
         <td>${fechaHoraStr}</td>
         <td><strong>${busDetectado}</strong></td>
-        <td style="${estiloTipo}">${tipo}</td>
+        <td style="${badgeColor} font-weight: bold;">${actividadSeleccionada}</td>
+        <td style="${estiloMovimiento}">${tipoMovimiento}</td>
     `;
 
-    // Insertar el nuevo registro al principio de la tabla
+    // Insertar arriba en la tabla de control
     tablaBody.insertBefore(nuevaFila, tablaBody.firstChild);
 
-    // Limpiar el escáner para el siguiente bus
+    // Resetear todo el formulario para el próximo bus
     document.getElementById("result-container").classList.add("hidden");
     busDetectado = "";
+    actividadSeleccionada = "";
     
-    alert(`Movimiento de ${tipo} registrado con éxito.`);
+    alert(`Registrado con éxito.`);
 }
