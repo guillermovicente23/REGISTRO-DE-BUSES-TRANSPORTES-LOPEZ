@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Control de Autobuses - QR</title>
-    <link rel="stylesheet" href="style.css?v=1.0">
+    <link rel="stylesheet" href="style.css?v=2.0">
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 </head>
 <body>
@@ -20,10 +20,26 @@
             <div id="reader"></div>
             
             <div id="result-container" class="hidden">
-                <p><strong>Autobús Detectado:</strong> <span id="qr-data">Ninguno</span></p>
-                <div class="actions">
-                    <button id="btn-entrada" class="btn btn-entrada">Marcar Entrada</button>
-                    <button id="btn-salida" class="btn btn-salida">Marcar Salida</button>
+                <p class="bus-detectado-alert"><strong>Autobús Detectado:</strong> <span id="qr-data">Ninguno</span></p>
+                
+                <div id="step-actividad">
+                    <p class="instruccion">¿Qué acción va a realizar el autobús?</p>
+                    <div class="grid-acciones">
+                        <button class="btn btn-ruta" onclick="seleccionarActividad('RUTA')">Verde Ruta</button>
+                        <button class="btn btn-taller" onclick="seleccionarActividad('TALLER')">Rojo Taller</button>
+                        <button class="btn btn-apoyo" onclick="seleccionarActividad('APOYO')">Beige Apoyo</button>
+                        <button class="btn btn-viaje" onclick="seleccionarActividad('VIAJE')">Azul Viaje</button>
+                        <button class="btn btn-lavado" onclick="seleccionarActividad('LAVADO')">Celeste Lavado</button>
+                    </div>
+                </div>
+
+                <div id="step-direccion" class="hidden">
+                    <p class="instruccion">Registrar movimiento para: <span id="actividad-seleccionada"></span></p>
+                    <div class="actions">
+                        <button id="btn-entrada" class="btn btn-entrada">Marcar Entrada</button>
+                        <button id="btn-salida" class="btn btn-salida">Marcar Salida</button>
+                    </div>
+                    <button class="btn-regresar" onclick="regresarAPaso1()">← Volver a cambiar acción</button>
                 </div>
             </div>
         </section>
@@ -35,8 +51,9 @@
                     <thead>
                         <tr>
                             <th>Fecha y Hora</th>
-                            <th>Identificador del Bus</th>
-                            <th>Tipo de Evento</th>
+                            <th>Autobús</th>
+                            <th>Acción / Estado</th>
+                            <th>Movimiento</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -50,6 +67,6 @@
         <p>&copy; 2026 - Sistema de Control de Transportes</p>
     </footer>
 
-    <script src="script.js?v=1.0"></script>
+    <script src="script.js?v=2.0"></script>
 </body>
 </html>
