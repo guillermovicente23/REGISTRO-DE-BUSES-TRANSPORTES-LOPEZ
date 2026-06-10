@@ -2,62 +2,21 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Control de Entrada y Salida - Transportes</title>
+    <title>Control de Flota EcoSort</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://rawgit.com/schmich/instascan-builds/master/instascan.min.js"></script>
 </head>
 <body>
-    <div class="container">
-        <h2>Control de Frecuencias y Flota</h2>
-        
-        <!-- Configuración del registro -->
-        <div class="panel-control">
-            <div class="grupo">
-                <label>Acción:</label>
-                <select id="accion" onchange="evaluarTipoSalida()">
-                    <option value="Entrada">Entrada</option>
-                    <option value="Salida">Salida</option>
-                </select>
-            </div>
-
-            <div class="grupo" id="contenedor-tipo-salida" style="display: none;">
-                <label>Tipo de Salida:</label>
-                <select id="tipoSalida">
-                    <option value="Ruta">Ruta</option>
-                    <option value="Taller / Mantenimiento">Taller / Mantenimiento</option>
-                    <option value="Limpieza">Limpieza</option>
-                    <option value="Especial">Viaje Especial</option>
-                </select>
-            </div>
-        </div>
-
-        <!-- Input donde el lector QR simula el teclado -->
-        <div class="seccion-escaneo">
-            <input type="text" id="lectorQR" placeholder="Haz clic aquí antes de escanear el QR..." autofocus>
-            <button onclick="procesarEscaneo()">Registrar Manual</button>
-        </div>
-
-        <!-- Pantalla de confirmación -->
-        <div id="feedback" class="feedback">Esperando escaneo...</div>
-
-        <!-- Historial de la sesión actual -->
-        <h3>Registros de esta Sesión</h3>
-        <table id="tablaRegistros">
-            <thead>
-                <tr>
-                    <th>Placa</th>
-                    <th>Movimiento</th>
-                    <th>Detalle/Tipo</th>
-                    <th>Fecha y Hora</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Aquí se irán agregando las filas automáticamente -->
-            </tbody>
-        </table>
-
-        <button id="btnDescargar" class="btn-descargar" onclick="descargarExcel()">Descargar Reporte para Excel</button>
-    </div>
+    <h1>Registro de Autobuses</h1>
+    <div id="contenedor-alertas" class="alerta-dinamica oculta"></div>
+    <video id="preview"></video>
+    
+    <table>
+        <thead>
+            <tr><th>Placa</th><th>Hora de Registro</th></tr>
+        </thead>
+        <tbody id="tabla-registros"></tbody>
+    </table>
 
     <script src="script.js"></script>
 </body>
