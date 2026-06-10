@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prueba Básica de Escaneo</title>
+    <title>Control de Entradas y Salidas</title>
     
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 
     <style>
-        /* Estilos muy básicos para centrar la prueba en pantalla */
         body {
             font-family: Arial, sans-serif;
             text-align: center;
@@ -23,7 +22,7 @@
             border-radius: 8px;
         }
         .pantalla-placa {
-            font-size: 24px;
+            font-size: 22px;
             font-weight: bold;
             color: #007bff;
             margin-top: 20px;
@@ -31,8 +30,8 @@
             background-color: #e9ecef;
             display: inline-block;
             border-radius: 5px;
+            min-width: 250px;
         }
-        /* Nuevos estilos para la selección de movimiento */
         .contenedor-opciones {
             margin: 20px auto;
             padding: 15px;
@@ -51,11 +50,15 @@
             transform: scale(1.3);
             margin-right: 5px;
         }
+        .estado-envio {
+            margin-top: 10px;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
 
-    <h1>Paso 1: Detectar Placa</h1>
+    <h1>Control de Flujo de Autobuses</h1>
     
     <div class="contenedor-opciones">
         <h3>Selecciona el tipo de movimiento:</h3>
@@ -67,22 +70,24 @@
         </label>
     </div>
 
-    <p>Apunta la cámara hacia el código QR para ver qué texto contiene</p>
+    <p>Enfoque el código QR de la placa para registrar el movimiento</p>
 
     <div id="lector-camara" class="caja-escaner"></div>
 
     <div>
-        <span>Placa detectada:</span><br>
         <div id="placa-resultado" class="pantalla-placa">Esperando código...</div>
+        <div id="estado-envio" class="estado-envio"></div>
     </div>
 
     <script>
-        // Esta función se ejecuta inmediatamente cuando la cámara lee cualquier QR
+        let escaneando = true; 
+
         function lecturaExitosa(textoEscaneado, resultadoDetallado) {
-            // 1. Obtenemos cuál opción está seleccionada (Entrada o Salida)
+            if (!escaneando) return; 
+            escaneando = false; 
+
             const opciones = document.getElementsByName('tipoMovimiento');
             let movimientoSeleccionado = "";
-            
             for (const opcion of opciones) {
                 if (opcion.checked) {
                     movimientoSeleccionado = opcion.value;
@@ -90,24 +95,47 @@
                 }
             }
 
-            // 2. Mostramos el texto limpio y el movimiento en la pantalla
-            document.getElementById('placa-resultado').innerHTML = 
-                `Placa: ${textoEscaneado} <br> <small style="color: #28a745;">Movimiento: ${movimientoSeleccionado}</small>`;
-            
-            // Para que puedas ver en la consola del navegador cómo se estructuran ambos datos
-            console.log("Datos listos para enviar:", {
-                placa: textoEscaneado,
-                movimiento: movimientoSeleccionado
+            document.getElementById('placa-resultado').innerHTML = `Placa: ${textoEscaneado}<br><small>Movimiento: ${movimientoSeleccionado}</small>`;
+            const divEstado = document.getElementById('estado-envio');
+            divEstado.style.color = "#ffc107";
+            divEstado.innerText = "Guardando registro en la nube...";
+
+            // REEMPLAZA ESTA URL POR LA QUE TE DIO GOOGLE APPS SCRIPT
+            const URL_GOOGLE_SCRIPT = AKfycbypXTYZioHLgtI517yEJ8t6iPov9o7B3e7Ybi0cr8kZLpIErCde4OC0uLXBw5CP-S1c;
+
+            fetch(URL_GOOGLE_SCRIPT, {
+                method: 'POST',
+                mode: 'no-cors', // Necesario para evitar bloqueos de seguridad del navegador con Google Apps
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    placa: textoEscaneado,
+                    movimiento: movimientoSeleccionado
+                })
+            })
+            .then(() => {
+                // Como usamos 'no-cors', asumimos que si no cae al catch, se envió correctamente
+                divEstado.style.color = "#28a745";
+                divEstado.innerText = "¡Registro guardado en Google Sheets!";
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                divEstado.style.color = "#dc3545";
+                divEstado.innerText = "Error al conectar con Google Sheets.";
+            })
+            .finally(() => {
+                setTimeout(() => {
+                    escaneando = true;
+                    divEstado.innerText = "";
+                }, 3000);
             });
-            
-            // Nota: El flujo se detiene aquí visualmente, listo para cuando decidas enviarlo a Java.
         }
 
         function lecturaFallida(error) {
-            // Ignoramos errores de enfoque continuos de la cámara
+            // Ignorar errores continuos
         }
 
-        // Configuramos e iniciamos el escáner
         const escáner = new Html5QrcodeScanner("lector-camara", { fps: 10, qrbox: 250 }, false);
         escáner.render(lecturaExitosa, lecturaFallida);
     </script>
