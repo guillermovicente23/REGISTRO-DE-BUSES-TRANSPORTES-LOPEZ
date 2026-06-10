@@ -10,8 +10,13 @@
 <body>
 
     <div class="container">
-        <h1>Control de Entradas y Salidas</h1>
-        <p class="subtitle">Escanea el código QR del autobús para registrar su movimiento</p>
+        <h1>EcoSort Trans-Control</h1>
+        <p class="subtitle">Selecciona el tipo de movimiento antes de escanear la unidad</p>
+        
+        <div class="menu-control">
+            <button id="btn-entrada" class="btn-toggle active" onclick="setMovimiento('ENTRADA')">📥 ENTRADA</button>
+            <button id="btn-salida" class="btn-toggle" onclick="setMovimiento('SALIDA')">📤 SALIDA</button>
+        </div>
         
         <div id="reader" class="scanner-box"></div>
         
@@ -19,40 +24,58 @@
     </div>
 
     <script>
-        // Función que se ejecuta cuando el escáner detecta un código QR de manera exitosa
+        // Por defecto el sistema inicia listo para marcar Entrada
+        let movimientoActual = "ENTRADA"; 
+
+        function setMovimiento(tipo) {
+            movimientoActual = tipo;
+            document.getElementById('btn-entrada').classList.remove('active');
+            document.getElementById('btn-salida').classList.remove('active');
+            
+            if(tipo === 'ENTRADA') {
+                document.getElementById('btn-entrada').classList.add('active');
+            } else {
+                document.getElementById('btn-salida').classList.add('active');
+            }
+        }
+
+        // Esta función se activa en automático cuando la cámara lee un QR
         function onScanSuccess(decodedText, decodedResult) {
-            // Detenemos el escáner momentáneamente para evitar múltiples lecturas
+            // Detener el escáner momentáneamente para evitar lecturas repetidas por segundo
             html5QrcodeScanner.clear();
             
-            document.getElementById('resultado').className = "mensaje procesando";
-            document.getElementById('resultado').innerText = "Procesando código: " + decodedText;
+            // Limpiar el ID de la placa (data) quitando espacios extra
+            const placaBus = decodedText.trim();
 
-            // Enviamos el código detectado al backend de Java mediante una petición POST
+            document.getElementById('resultado').className = "mensaje procesando";
+            document.getElementById('resultado').innerText = "Procesando Placa: " + placaBus;
+
+            // Enviamos los datos al Backend de Java por método POST
             fetch('ControladorAutobuses', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                 },
-                body: 'codigoBus=' + encodeURIComponent(decodedText)
+                body: 'codigoBus=' + encodeURIComponent(placaBus) + '&movimiento=' + encodeURIComponent(movimientoActual)
             })
             .then(response => response.text())
             .then(data => {
-                // Mostramos la respuesta del servidor (Ej: "Entrada registrada exitosamente")
+                // El backend nos responde con el éxito del registro
                 document.getElementById('resultado').className = "mensaje exito";
                 document.getElementById('resultado').innerText = data;
                 
-                // Reiniciamos el escáner después de 3 segundos para el siguiente autobús
+                // Reiniciar la cámara en 3 segundos para el próximo autobús
                 setTimeout(reiniciarEscaner, 3000);
             })
             .catch(error => {
                 document.getElementById('resultado').className = "mensaje error";
-                document.getElementById('resultado').innerText = "Error al conectar con el servidor.";
+                document.getElementById('resultado').innerText = "Error de comunicación con el servidor.";
                 setTimeout(reiniciarEscaner, 3000);
             });
         }
 
         function onScanFailure(error) {
-            // Errores menores de enfoque o lectura se ignoran para no saturar la pantalla
+            // Ignorar fallos continuos de enfoque de cámara
         }
 
         let html5QrcodeScanner;
@@ -60,11 +83,11 @@
             document.getElementById('resultado').innerText = "";
             document.getElementById('resultado').className = "mensaje";
             
-            html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: {width: 250, height: 250} }, /* verbose= */ false);
+            html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 14, qrbox: {width: 250, height: 250} }, false);
             html5QrcodeScanner.render(onScanSuccess, onScanFailure);
         }
 
-        // Inicializamos el escáner al cargar la página
+        // Arrancar la cámara al abrir la aplicación
         reiniciarEscaner();
     </script>
 </body>
