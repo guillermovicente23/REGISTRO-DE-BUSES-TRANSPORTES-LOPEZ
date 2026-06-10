@@ -32,11 +32,41 @@
             display: inline-block;
             border-radius: 5px;
         }
+        /* Nuevos estilos para la selección de movimiento */
+        .contenedor-opciones {
+            margin: 20px auto;
+            padding: 15px;
+            max-width: 400px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .opcion-radio {
+            margin: 0 15px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .opcion-radio input {
+            transform: scale(1.3);
+            margin-right: 5px;
+        }
     </style>
 </head>
 <body>
 
     <h1>Paso 1: Detectar Placa</h1>
+    
+    <div class="contenedor-opciones">
+        <h3>Selecciona el tipo de movimiento:</h3>
+        <label class="opcion-radio">
+            <input type="radio" name="tipoMovimiento" value="ENTRADA" checked> Entrada
+        </label>
+        <label class="opcion-radio">
+            <input type="radio" name="tipoMovimiento" value="SALIDA"> Salida
+        </label>
+    </div>
+
     <p>Apunta la cámara hacia el código QR para ver qué texto contiene</p>
 
     <div id="lector-camara" class="caja-escaner"></div>
@@ -49,11 +79,28 @@
     <script>
         // Esta función se ejecuta inmediatamente cuando la cámara lee cualquier QR
         function lecturaExitosa(textoEscaneado, resultadoDetallado) {
-            // Mostramos el texto limpio en la pantalla del navegador
-            document.getElementById('placa-resultado').innerText = textoEscaneado;
+            // 1. Obtenemos cuál opción está seleccionada (Entrada o Salida)
+            const opciones = document.getElementsByName('tipoMovimiento');
+            let movimientoSeleccionado = "";
             
-            // Nota: Aquí no estamos usando JSON.parse() ni enviando nada a Java,
-            // solo queremos ver el texto plano en pantalla.
+            for (const opcion of opciones) {
+                if (opcion.checked) {
+                    movimientoSeleccionado = opcion.value;
+                    break;
+                }
+            }
+
+            // 2. Mostramos el texto limpio y el movimiento en la pantalla
+            document.getElementById('placa-resultado').innerHTML = 
+                `Placa: ${textoEscaneado} <br> <small style="color: #28a745;">Movimiento: ${movimientoSeleccionado}</small>`;
+            
+            // Para que puedas ver en la consola del navegador cómo se estructuran ambos datos
+            console.log("Datos listos para enviar:", {
+                placa: textoEscaneado,
+                movimiento: movimientoSeleccionado
+            });
+            
+            // Nota: El flujo se detiene aquí visualmente, listo para cuando decidas enviarlo a Java.
         }
 
         function lecturaFallida(error) {
