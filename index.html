@@ -21,20 +21,9 @@
             background-color: #fff;
             border-radius: 8px;
         }
-        .pantalla-placa {
-            font-size: 22px;
-            font-weight: bold;
-            color: #007bff;
-            margin-top: 20px;
-            padding: 10px;
-            background-color: #e9ecef;
-            display: inline-block;
-            border-radius: 5px;
-            min-width: 250px;
-        }
-        .contenedor-opciones {
+        .contenedor-formulario {
             margin: 20px auto;
-            padding: 15px;
+            padding: 20px;
             max-width: 400px;
             background-color: #fff;
             border-radius: 8px;
@@ -50,9 +39,48 @@
             transform: scale(1.3);
             margin-right: 5px;
         }
-        .estado-envio {
-            margin-top: 10px;
+        .campo-placa {
+            width: 80%;
+            padding: 12px;
+            font-size: 22px;
             font-weight: bold;
+            text-align: center;
+            text-transform: uppercase;
+            margin-top: 15px;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+            color: #007bff;
+            background-color: #e9ecef;
+        }
+        .campo-placa:focus {
+            background-color: #fff;
+            border-color: #007bff;
+            outline: none;
+        }
+        .btn-registrar {
+            width: 85%;
+            padding: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            background-color: #28a745;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: background 0.2s;
+        }
+        .btn-registrar:hover {
+            background-color: #218838;
+        }
+        .btn-registrar:active {
+            transform: scale(0.98);
+        }
+        .estado-envio {
+            margin-top: 15px;
+            font-weight: bold;
+            font-size: 16px;
         }
     </style>
 </head>
@@ -60,31 +88,56 @@
 
     <h1>Control de Flujo de Autobuses</h1>
     
-    <div class="contenedor-opciones">
-        <h3>Selecciona el tipo de movimiento:</h3>
+    <div class="contenedor-formulario">
+        <h3>1. Tipo de movimiento:</h3>
         <label class="opcion-radio">
             <input type="radio" name="tipoMovimiento" value="ENTRADA" checked> Entrada
         </label>
         <label class="opcion-radio">
             <input type="radio" name="tipoMovimiento" value="SALIDA"> Salida
         </label>
-    </div>
 
-    <p>Enfoque el código QR de la placa para registrar el movimiento</p>
-
-    <div id="lector-camara" class="caja-escaner"></div>
-
-    <div>
-        <div id="placa-resultado" class="pantalla-placa">Esperando código...</div>
+        <h3>2. Placa detectada/manual:</h3>
+        <input type="text" id="placa-input" class="campo-placa" placeholder="ESPERANDO QR..." autocomplete="off">
+        
+        <button id="btn-enviar" class="btn-registrar" onclick="enviarDatosAGoogle()">AGREGAR REGISTRO</button>
+        
         <div id="estado-envio" class="estado-envio"></div>
     </div>
 
+    <p>Apunta la cámara al código QR o escribe la placa manualmente arriba</p>
+    <div id="lector-camara" class="caja-escaner"></div>
+
     <script>
-        let escaneando = true; 
+        // URL de tu Google Apps Script configurada correctamente
+        const URL_GOOGLE_SCRIPT = 'https://script.google.com/macros/s/AKfycbypXTYZioHLgtI517yEJ8t6iPov9o7B3e7Ybi0cr8kZLpIErCde4OC0uLXBw5CP-S1c/exec';
 
         function lecturaExitosa(textoEscaneado, resultadoDetallado) {
-            if (!escaneando) return; 
-            escaneando = false; 
+            const inputPlaca = document.getElementById('placa-input');
+            
+            if (inputPlaca.value !== textoEscaneado) {
+                inputPlaca.value = textoEscaneado.toUpperCase();
+                inputPlaca.style.backgroundColor = "#d4edda";
+                setTimeout(() => { inputPlaca.style.backgroundColor = "#e9ecef"; }, 500);
+            }
+        }
+
+        function lecturaFallida(error) {
+            // Ignorar errores continuos de enfoque
+        }
+
+        function enviarDatosAGoogle() {
+            const inputPlaca = document.getElementById('placa-input');
+            const divEstado = document.getElementById('estado-envio');
+            const boton = document.getElementById('btn-enviar');
+            
+            const placaTexto = inputPlaca.value.trim();
+
+            if (placaTexto === "" || placaTexto === "ESPERANDO QR...") {
+                divEstado.style.color = "#dc3545";
+                divEstado.innerText = "Por favor, ingresa o escanea una placa.";
+                return;
+            }
 
             const opciones = document.getElementsByName('tipoMovimiento');
             let movimientoSeleccionado = "";
@@ -95,45 +148,40 @@
                 }
             }
 
-            document.getElementById('placa-resultado').innerHTML = `Placa: ${textoEscaneado}<br><small>Movimiento: ${movimientoSeleccionado}</small>`;
-            const divEstado = document.getElementById('estado-envio');
+            boton.disabled = true;
+            boton.innerText = "GUARDANDO...";
             divEstado.style.color = "#ffc107";
-            divEstado.innerText = "Guardando registro en la nube...";
+            divEstado.innerText = "Enviando datos a Google Sheets...";
 
-            // REEMPLAZA ESTA URL POR LA QUE TE DIO GOOGLE APPS SCRIPT
-            const URL_GOOGLE_SCRIPT = AKfycbypXTYZioHLgtI517yEJ8t6iPov9o7B3e7Ybi0cr8kZLpIErCde4OC0uLXBw5CP-S1c;
+            const datosFormulario = new URLSearchParams();
+            datosFormulario.append('placa', placaTexto);
+            datosFormulario.append('movimiento', movimientoSeleccionado);
 
             fetch(URL_GOOGLE_SCRIPT, {
                 method: 'POST',
-                mode: 'no-cors', // Necesario para evitar bloqueos de seguridad del navegador con Google Apps
+                mode: 'no-cors',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/x-www-form-urlencoded'
                 },
-                body: JSON.stringify({
-                    placa: textoEscaneado,
-                    movimiento: movimientoSeleccionado
-                })
+                body: datosFormulario.toString()
             })
             .then(() => {
-                // Como usamos 'no-cors', asumimos que si no cae al catch, se envió correctamente
                 divEstado.style.color = "#28a745";
-                divEstado.innerText = "¡Registro guardado en Google Sheets!";
+                divEstado.innerText = `¡${movimientoSeleccionado} registrada con éxito!`;
+                inputPlaca.value = ""; 
             })
             .catch(error => {
                 console.error('Error:', error);
                 divEstado.style.color = "#dc3545";
-                divEstado.innerText = "Error al conectar con Google Sheets.";
+                divEstado.innerText = "Error de red al conectar.";
             })
             .finally(() => {
                 setTimeout(() => {
-                    escaneando = true;
+                    boton.disabled = false;
+                    boton.innerText = "AGREGAR REGISTRO";
                     divEstado.innerText = "";
-                }, 3000);
+                }, 2000);
             });
-        }
-
-        function lecturaFallida(error) {
-            // Ignorar errores continuos
         }
 
         const escáner = new Html5QrcodeScanner("lector-camara", { fps: 10, qrbox: 250 }, false);
