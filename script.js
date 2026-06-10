@@ -1,88 +1,94 @@
-let html5QrcodeScanner;
-let busDetectado = "";
-let actividadSeleccionada = "";
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
-document.addEventListener("DOMContentLoaded", () => {
-    // Inicializar el escáner QR
-    html5QrcodeScanner = new Html5QrcodeScanner(
-        "reader", 
-        { fps: 10, qrbox: { width: 250, height: 250 } },
-        false
-    );
-    
-    html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+@WebServlet("/ControladorAutobuses")
+public class ControladorAutobuses extends HttpServlet {
+    private static final long serialVersionUID = 1L;
 
-    // Asignar eventos de Entrada y Salida finales
-    document.getElementById("btn-entrada").addEventListener("click", () => registrarMovimiento("ENTRADA"));
-    document.getElementById("btn-salida").addEventListener("click", () => registrarMovimiento("SALIDA"));
-});
+    // Configuración de la conexión a tu Base de Datos (Ajusta los datos)
+    private final String DB_URL = "jdbc:mysql://localhost:3306/control_transporte";
+    private final String DB_USER = "root";
+    private final String DB_PASSWORD = "tu_password";
 
-// Cuando se lee el QR con éxito
-function onScanSuccess(decodedText, decodedResult) {
-    busDetectado = decodedText;
-    document.getElementById("qr-data").innerText = decodedText;
-    
-    // Mostramos el contenedor y nos aseguramos de arrancar en el Paso 1 (Actividades)
-    document.getElementById("result-container").classList.remove("hidden");
-    regresarAPaso1();
-}
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        
+        response.setContentType("text/plain;charset=UTF-8");
+        PrintWriter out = response.getWriter();
+        
+        // Obtenemos el texto que venía dentro del código QR (ej. la placa del autobús)
+        String codigoBus = request.getParameter("codigoBus");
 
-function onScanFailure(error) {
-    // Silencioso para evitar alertas infinitas en pantalla
-}
+        if (codigoBus == null || codigoBus.trim().isEmpty()) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            out.print("Código QR inválido o vacío.");
+            return;
+        }
 
-// Paso 1: Guardar qué actividad se eligió y saltar a Entrada/Salida
-function seleccionarActividad(actividad) {
-    actividadSeleccionada = actividad;
-    
-    // Colocar el nombre de la actividad en la etiqueta de guía
-    document.getElementById("actividad-seleccionada").innerText = actividad;
-    
-    // Intercambiar pantallas visuales
-    document.getElementById("step-actividad").classList.add("hidden");
-    document.getElementById("step-direccion").classList.remove("hidden");
-}
+        Connection conn = null;
+        PreparedStatement psCheck = null;
+        PreparedStatement psInsert = null;
+        ResultSet rs = null;
 
-// Permite al usuario volver atrás si se equivocó de botón de color
-function regresarAPaso1() {
-    actividadSeleccionada = "";
-    document.getElementById("step-direccion").classList.add("hidden");
-    document.getElementById("step-actividad").classList.remove("hidden");
-}
+        try {
+            // 1. Conectar a la base de datos
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
 
-// Paso 2: Registro definitivo e inserción en la tabla
-function registrarMovimiento(tipoMovimiento) {
-    if (!busDetectado || !actividadSeleccionada) return;
+            // 2. Consultar el último movimiento de este autobús para determinar si entra o sale
+            String sqlCheck = "SELECT tipo_movimiento FROM registros_control WHERE codigo_bus = ? "
+                            + "ORDER BY fecha_hora DESC LIMIT 1";
+            
+            psCheck = conn.prepareStatement(sqlCheck);
+            psCheck.setString(1, codigoBus);
+            rs = psCheck.executeQuery();
 
-    const tablaBody = document.querySelector("#logs-table tbody");
-    const ahora = new Date();
-    const fechaHoraStr = ahora.toLocaleDateString() + " " + ahora.toLocaleTimeString();
+            String proximoMovimiento = "ENTRADA"; // Estado por defecto si es la primera vez que pasa
+            
+            if (rs.next()) {
+                String ultimoMovimiento = rs.getString("tipo_movimiento");
+                if ("ENTRADA".equals(ultimoMovimiento)) {
+                    proximoMovimiento = "SALIDA";
+                }
+            }
 
-    const nuevaFila = document.createElement("tr");
-    
-    // Colores visuales en la tabla según el tipo de movimiento
-    const estiloMovimiento = tipoMovimiento === "ENTRADA" ? "color: #2f855a; font-weight: bold;" : "color: #c53030; font-weight: bold;";
-    
-    // Estilos sutiles para la columna de actividad en la tabla
-    let badgeColor = "";
-    if(actividadSeleccionada === 'RUTA') badgeColor = "color: #2e7d32;";
-    if(actividadSeleccionada === 'TALLER') badgeColor = "color: #c62828;";
-    if(actividadSeleccionada === 'VIAJE') badgeColor = "color: #1565c0;";
+            // 3. Insertar el nuevo registro con la fecha y hora actual del servidor (NOW())
+            String sqlInsert = "INSERT INTO registros_control (codigo_bus, tipo_movimiento, fecha_hora) "
+                             + "VALUES (?, ?, NOW())";
+            
+            psInsert = conn.prepareStatement(sqlInsert);
+            psInsert.setString(1, codigoBus);
+            psInsert.setString(2, proximoMovimiento);
+            
+            int filasAfectadas = psInsert.executeUpdate();
 
-    nuevaFila.innerHTML = `
-        <td>${fechaHoraStr}</td>
-        <td><strong>${busDetectado}</strong></td>
-        <td style="${badgeColor} font-weight: bold;">${actividadSeleccionada}</td>
-        <td style="${estiloMovimiento}">${tipoMovimiento}</td>
-    `;
+            if (filasAfectadas > 0) {
+                // Enviamos la confirmación que el HTML mostrará en pantalla
+                out.print("✓ " + proximoMovimiento + " registrada para el autobús: " + codigoBus);
+            } else {
+                out.print("No se pudo guardar el registro en la base de datos.");
+            }
 
-    // Insertar arriba en la tabla de control
-    tablaBody.insertBefore(nuevaFila, tablaBody.firstChild);
-
-    // Resetear todo el formulario para el próximo bus
-    document.getElementById("result-container").classList.add("hidden");
-    busDetectado = "";
-    actividadSeleccionada = "";
-    
-    alert(`Registrado con éxito.`);
+        } catch (ClassNotFoundException e) {
+            out.print("Error de configuración: No se encontró el driver de la BD. " + e.getMessage());
+        } catch (SQLException e) {
+            out.print("Error en la base de datos: " + e.getMessage());
+        } finally {
+            // Cerramos todos los recursos de forma segura
+            try { if (rs != null) rs.close(); } catch (SQLException e) {}
+            try { if (psCheck != null) psCheck.close(); } catch (SQLException e) {}
+            try { if (psInsert != null) psInsert.close(); } catch (SQLException e) {}
+            try { if (conn != null) conn.close(); } catch (SQLException e) {}
+        }
+    }
 }
