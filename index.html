@@ -45,11 +45,10 @@
         }
         .btn-login:hover { background-color: #0056b3; }
 
-        /* Panel Principal de la App (Oculto al inicio) */
+        /* Panel Principal */
         .panel-principal {
             display: none;
         }
-        
         .caja-escaner {
             max-width: 400px;
             margin: 20px auto;
@@ -74,6 +73,18 @@
         .opcion-radio input {
             transform: scale(1.3);
             margin-right: 5px;
+        }
+        .selector-tipo {
+            width: 85%;
+            padding: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+            background-color: #fff;
+            color: #333;
+            margin-top: 10px;
+            cursor: pointer;
         }
         .campo-placa {
             width: 80%;
@@ -103,7 +114,7 @@
         .btn-registrar:hover { background-color: #218838; }
         
         .btn-deshacer {
-            display: none; /* Se activa solo si es admin */
+            display: none;
             width: 85%;
             padding: 10px;
             font-size: 14px;
@@ -145,13 +156,12 @@
         <button class="btn-login" onclick="autenticarUsuario()">INGRESAR</button>
     </div>
 
-
     <div id="panel-sistema" class="panel-principal">
         <h1>Control de Flujo de Autobuses</h1>
         <div class="usuario-activo">Sesión activa: <strong id="nombre-sesion"></strong></div>
         
         <div class="contenedor-formulario">
-            <h3>1. Tipo de movimiento:</h3>
+            <h3>1. Movimiento:</h3>
             <label class="opcion-radio">
                 <input type="radio" name="tipoMovimiento" value="ENTRADA" checked> Entrada
             </label>
@@ -159,7 +169,16 @@
                 <input type="radio" name="tipoMovimiento" value="SALIDA"> Salida
             </label>
 
-            <h3>2. Placa detectada/manual:</h3>
+            <h3>2. Clasificación / Destino:</h3>
+            <select id="tipo-servicio" class="selector-tipo">
+                <option value="RUTA">🚌 RUTA</option>
+                <option value="VIAJE">🗺️ VIAJE</option>
+                <option value="TALLER">🔧 TALLER</option>
+                <option value="APOYO">🤝 APOYO</option>
+                <option value="LAVADO">🧼 LAVADO</option>
+            </select>
+
+            <h3>3. Placa detectada/manual:</h3>
             <input type="text" id="placa-input" class="campo-placa" placeholder="ESPERANDO QR..." autocomplete="off">
             
             <button id="btn-enviar" class="btn-registrar" onclick="enviarDatosAGoogle()">AGREGAR REGISTRO</button>
@@ -176,17 +195,17 @@
     <script>
         const URL_GOOGLE_SCRIPT = 'https://script.google.com/macros/s/AKfycbypXTYZioHLgtI517yEJ8t6iPov9o7B3e7Ybi0cr8kZLpIErCde4OC0uLXBw5CP-S1c/exec';
         
-        // Base de datos local de usuarios y roles
+        // Listado de usuarios actualizado con el usuario "taller"
         const USUARIOS_VALIDOS = {
             "admin": { contrasena: "admin123", rol: "ADMIN" },
             "operador1": { contrasena: "op123", rol: "OPERADOR" },
-            "operador2": { contrasena: "op456", rol: "OPERADOR" }
+            "operador2": { contrasena: "op456", rol: "OPERADOR" },
+            "taller": { contrasena: "taller2026", rol: "OPERADOR" } // <--- Agregado con rol OPERADOR
         };
 
         let usuarioLogueado = null;
         let escáner = null;
 
-        // Función para validar el Login
         function autenticarUsuario() {
             const userIn = document.getElementById('usuario').value.trim();
             const passIn = document.getElementById('contrasena').value;
@@ -194,18 +213,14 @@
 
             if (USUARIOS_VALIDOS[userIn] && USUARIOS_VALIDOS[userIn].contrasena === passIn) {
                 usuarioLogueado = USUARIOS_VALIDOS[userIn];
-                
-                // Ocultar login y mostrar el sistema
                 document.getElementById('pantalla-login').style.display = 'none';
                 document.getElementById('panel-sistema').style.display = 'block';
-                document.getElementById('nombre-sesion').innerText = `${userIn.toUpperCase()} (${usuarioLogueado.rol})`;
+                document.getElementById('nombre-sesion').innerText = `${userIn.toUpperCase()}`;
 
-                // Mostrar el botón de borrar ÚNICAMENTE si es Administrador
+                // Solo el Administrador ve el botón de borrar
                 if (usuarioLogueado.rol === "ADMIN") {
                     document.getElementById('btn-borrar').style.display = 'inline-block';
                 }
-
-                // Iniciar la cámara solo después de loguearse con éxito
                 iniciarEscaner();
             } else {
                 divError.innerText = "Usuario o contraseña incorrectos.";
@@ -232,6 +247,7 @@
             const inputPlaca = document.getElementById('placa-input');
             const divEstado = document.getElementById('estado-envio');
             const boton = document.getElementById('btn-enviar');
+            const selectTipo = document.getElementById('tipo-servicio');
             const placaTexto = inputPlaca.value.trim();
 
             if (placaTexto === "" || placaTexto === "ESPERANDO QR...") {
@@ -246,6 +262,8 @@
                 if (opcion.checked) { movimientoSeleccionado = opcion.value; break; }
             }
 
+            const tipoSeleccionado = selectTipo.value;
+
             boton.disabled = true;
             divEstado.style.color = "#ffc107";
             divEstado.innerText = "Enviando datos...";
@@ -254,6 +272,7 @@
             datosFormulario.append('accion', 'REGISTRAR');
             datosFormulario.append('placa', placaTexto);
             datosFormulario.append('movimiento', movimientoSeleccionado);
+            datosFormulario.append('tipo', tipoSeleccionado);
 
             fetch(URL_GOOGLE_SCRIPT, {
                 method: 'POST',
@@ -263,7 +282,7 @@
             })
             .then(() => {
                 divEstado.style.color = "#28a745";
-                divEstado.innerText = `¡${movimientoSeleccionado} registrada con éxito!`;
+                divEstado.innerText = `¡${movimientoSeleccionado} (${tipoSeleccionado}) registrada con éxito!`;
                 inputPlaca.value = ""; 
             })
             .catch(error => {
@@ -276,9 +295,8 @@
         }
 
         function eliminarUltimoRegistro() {
-            // Protección extra en JavaScript por si intentan activar el botón por consola
             if (!usuarioLogueado || usuarioLogueado.rol !== "ADMIN") {
-                alert("No tienes permisos para realizar esta acción.");
+                alert("No tienes permisos.");
                 return;
             }
 
@@ -298,23 +316,4 @@
 
             fetch(URL_GOOGLE_SCRIPT, {
                 method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: datosFormulario.toString()
-            })
-            .then(() => {
-                divEstado.style.color = "#28a745";
-                divEstado.innerText = "¡El último registro fue eliminado exitosamente!";
-            })
-            .catch(error => {
-                divEstado.style.color = "#dc3545";
-                divEstado.innerText = "Error al intentar borrar.";
-            })
-            .finally(() => {
-                setTimeout(() => { botonBorrar.disabled = false; divEstado.innerText = ""; }, 2000);
-            });
-        }
-    </script>
-
-</body>
-</html>
+                mode: 'no
