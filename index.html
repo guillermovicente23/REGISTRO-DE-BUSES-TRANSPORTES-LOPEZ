@@ -69,13 +69,26 @@
             cursor: pointer;
             margin-top: 15px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            transition: background 0.2s;
         }
-        .btn-registrar:hover {
-            background-color: #218838;
+        .btn-registrar:hover { background-color: #218838; }
+        
+        /* Estilo para el nuevo botón de eliminar */
+        .btn-deshacer {
+            width: 85%;
+            padding: 10px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #666;
+            background-color: #e0e0e0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 15px;
         }
-        .btn-registrar:active {
-            transform: scale(0.98);
+        .btn-deshacer:hover {
+            background-color: #dc3545;
+            color: white;
+            border-color: #dc3545;
         }
         .estado-envio {
             margin-top: 15px;
@@ -102,6 +115,8 @@
         
         <button id="btn-enviar" class="btn-registrar" onclick="enviarDatosAGoogle()">AGREGAR REGISTRO</button>
         
+        <button id="btn-borrar" class="btn-deshacer" onclick="eliminarUltimoRegistro()">¿Te equivocaste? Deshacer último registro</button>
+        
         <div id="estado-envio" class="estado-envio"></div>
     </div>
 
@@ -114,7 +129,6 @@
 
         function lecturaExitosa(textoEscaneado, resultadoDetallado) {
             const inputPlaca = document.getElementById('placa-input');
-            
             if (inputPlaca.value !== textoEscaneado) {
                 inputPlaca.value = textoEscaneado.toUpperCase();
                 inputPlaca.style.backgroundColor = "#d4edda";
@@ -122,15 +136,13 @@
             }
         }
 
-        function lecturaFallida(error) {
-            // Ignorar errores continuos de enfoque
-        }
+        function lecturaFallida(error) {}
 
+        // ENVIAR / REGISTRAR NUEVO BUS
         function enviarDatosAGoogle() {
             const inputPlaca = document.getElementById('placa-input');
             const divEstado = document.getElementById('estado-envio');
             const boton = document.getElementById('btn-enviar');
-            
             const placaTexto = inputPlaca.value.trim();
 
             if (placaTexto === "" || placaTexto === "ESPERANDO QR...") {
@@ -142,27 +154,22 @@
             const opciones = document.getElementsByName('tipoMovimiento');
             let movimientoSeleccionado = "";
             for (const opcion of opciones) {
-                if (opcion.checked) {
-                    movimientoSeleccionado = opcion.value;
-                    break;
-                }
+                if (opcion.checked) { movimientoSeleccionado = opcion.value; break; }
             }
 
             boton.disabled = true;
-            boton.innerText = "GUARDANDO...";
             divEstado.style.color = "#ffc107";
-            divEstado.innerText = "Enviando datos a Google Sheets...";
+            divEstado.innerText = "Enviando datos...";
 
             const datosFormulario = new URLSearchParams();
+            datosFormulario.append('accion', 'REGISTRAR'); // <--- Le avisa a Google qué hacer
             datosFormulario.append('placa', placaTexto);
             datosFormulario.append('movimiento', movimientoSeleccionado);
 
             fetch(URL_GOOGLE_SCRIPT, {
                 method: 'POST',
                 mode: 'no-cors',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: datosFormulario.toString()
             })
             .then(() => {
@@ -171,16 +178,47 @@
                 inputPlaca.value = ""; 
             })
             .catch(error => {
-                console.error('Error:', error);
                 divEstado.style.color = "#dc3545";
-                divEstado.innerText = "Error de red al conectar.";
+                divEstado.innerText = "Error de red.";
             })
             .finally(() => {
-                setTimeout(() => {
-                    boton.disabled = false;
-                    boton.innerText = "AGREGAR REGISTRO";
-                    divEstado.innerText = "";
-                }, 2000);
+                setTimeout(() => { boton.disabled = false; divEstado.innerText = ""; }, 2000);
+            });
+        }
+
+        // NUEVO: FUNCIÓN PARA BORRAR LA ÚLTIMA FILA
+        function eliminarUltimoRegistro() {
+            const divEstado = document.getElementById('estado-envio');
+            const botonBorrar = document.getElementById('btn-borrar');
+
+            // Preguntar al usuario para estar 100% seguros
+            if (!confirm("¿Estás seguro de que deseas eliminar el ÚLTIMO registro de la lista?")) {
+                return; 
+            }
+
+            botonBorrar.disabled = true;
+            divEstado.style.color = "#dc3545";
+            divEstado.innerText = "Eliminando última fila de Google Sheets...";
+
+            const datosFormulario = new URLSearchParams();
+            datosFormulario.append('accion', 'ELIMINAR'); // <--- Le indica a Google que borre la fila
+
+            fetch(URL_GOOGLE_SCRIPT, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: datosFormulario.toString()
+            })
+            .then(() => {
+                divEstado.style.color = "#28a745";
+                divEstado.innerText = "¡El último registro fue eliminado exitosamente!";
+            })
+            .catch(error => {
+                divEstado.style.color = "#dc3545";
+                divEstado.innerText = "Error al intentar borrar.";
+            })
+            .finally(() => {
+                setTimeout(() => { botonBorrar.disabled = false; divEstado.innerText = ""; }, 2000);
             });
         }
 
