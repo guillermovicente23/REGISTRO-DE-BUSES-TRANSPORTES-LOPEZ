@@ -1,202 +1,90 @@
-/* Estilos Generales */
-* {
+/* Configuración General */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f4f7f6;
     margin: 0;
     padding: 0;
-    box-sizing: border-box;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-body {
-    background-color: #f4f6f9;
-    color: #333;
-    line-height: 1.6;
-}
-
-header {
-    background-color: #1a365d;
-    color: white;
-    text-align: center;
-    padding: 2rem 1rem;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-header h1 {
-    font-size: 1.8rem;
-    margin-bottom: 0.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
 }
 
 .container {
-    max-width: 1000px;
-    margin: 2rem auto;
-    padding: 0 1rem;
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 2rem;
+    background-color: #ffffff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    max-width: 450px;
+    width: 90%;
 }
 
-@media (min-width: 768px) {
-    .container {
-        grid-template-columns: 1.2fr 1fr;
-    }
+h1 {
+    color: #2c3e50;
+    margin-bottom: 5px;
+    font-size: 24px;
 }
 
-/* Tarjetas/Secciones */
-section {
-    background: white;
-    padding: 1.5rem;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+.subtitle {
+    color: #7f8c8d;
+    font-size: 14px;
+    margin-bottom: 25px;
 }
 
-section h2 {
-    font-size: 1.2rem;
-    color: #1a365d;
-    margin-bottom: 1rem;
-    border-bottom: 2px solid #e2e8f0;
-    padding-bottom: 0.5rem;
-}
-
-/* Área del Escáner */
-#reader {
-    width: 100%;
-    background: #000;
+/* Caja del Escáner */
+.scanner-box {
+    border: 2px solid #3498db !important;
     border-radius: 8px;
     overflow: hidden;
+    background-color: #fafafa;
 }
 
-#result-container {
-    margin-top: 1.5rem;
-    padding: 1.5rem;
-    background: #edf2f7;
-    border-radius: 6px;
-}
-
-.bus-detectado-alert {
-    text-align: center;
-    font-size: 1.2rem;
-    margin-bottom: 1rem;
-    background: white;
-    padding: 0.5rem;
-    border-radius: 6px;
-    border-left: 5px solid #1a365d;
-}
-
-#qr-data {
-    color: #2b6cb0;
-    font-weight: bold;
-}
-
-.instruccion {
-    font-weight: 600;
-    margin-bottom: 1rem;
-    text-align: center;
-    color: #4a5568;
-}
-
-#actividad-seleccionada {
-    background: #1a365d;
+/* Estilos para los botones nativos de la librería dentro del reader */
+#reader button {
+    background-color: #3498db;
     color: white;
-    padding: 0.2rem 0.6rem;
-    border-radius: 4px;
-    font-size: 0.9rem;
-}
-
-.hidden {
-    display: none !important;
-}
-
-/* Grid de Botones de Actividad */
-.grid-acciones {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 0.75rem;
-}
-
-@media (min-width: 480px) {
-    .grid-acciones {
-        grid-template-columns: 1fr 1fr;
-    }
-}
-
-/* Botones Base */
-.btn {
-    padding: 0.85rem 1rem;
     border: none;
+    padding: 10px 20px;
+    font-size: 14px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 10px 0;
+    text-transform: uppercase;
+    font-weight: bold;
+}
+
+#reader button:hover {
+    background-color: #2980b9;
+}
+
+/* Mensajes de Retroalimentación */
+.mensaje {
+    margin-top: 20px;
+    padding: 12px;
     border-radius: 6px;
     font-weight: bold;
-    cursor: pointer;
-    transition: transform 0.1s, filter 0.2s;
-    font-size: 0.95rem;
-    text-align: center;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    font-size: 15px;
+    display: none;
 }
 
-.btn:active {
-    transform: scale(0.98);
-}
-
-.btn:hover {
-    filter: brightness(0.9);
-}
-
-/* Nuevos colores solicitados */
-.btn-ruta { background-color: #2e7d32; color: white; }        /* Verde Ruta */
-.btn-taller { background-color: #c62828; color: white; }      /* Rojo Taller */
-.btn-apoyo { background-color: #d7ccc8; color: #4e342e; }     /* Beige Apoyo */
-.btn-viaje { background-color: #1565c0; color: white; }       /* Azul Viaje */
-.btn-lavado { background-color: #4dd0e1; color: #004d40; }     /* Celeste Lavado */
-
-/* Botones Entrada / Salida */
-.actions {
-    display: flex;
-    gap: 1rem;
-    margin-top: 1rem;
-}
-
-.btn-entrada { background-color: #2f855a; color: white; width: 100%; font-size: 1.1rem; padding: 1.2rem;}
-.btn-salida { background-color: #e53e3e; color: white; width: 100%; font-size: 1.1rem; padding: 1.2rem;}
-
-.btn-regresar {
+.mensaje.procesando {
     display: block;
-    margin: 1.5rem auto 0 auto;
-    background: none;
-    border: none;
-    color: #718096;
-    cursor: pointer;
-    text-decoration: underline;
-    font-size: 0.9rem;
+    background-color: #e8f4f8;
+    color: #2980b9;
+    border: 1px solid #bce1f1;
 }
 
-/* Tabla de Registros */
-.table-responsive {
-    overflow-x: auto;
+.mensaje.exito {
+    display: block;
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
 }
 
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 0.5rem;
-    font-size: 0.9rem;
-}
-
-th, td {
-    padding: 0.75rem;
-    text-align: left;
-    border-bottom: 1px solid #e2e8f0;
-}
-
-th {
-    background-color: #edf2f7;
-    color: #4a5568;
-}
-
-tr:hover {
-    background-color: #f7fafc;
-}
-
-footer {
-    text-align: center;
-    padding: 2rem;
-    color: #718096;
-    font-size: 0.85rem;
+.mensaje.error {
+    display: block;
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
 }
