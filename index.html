@@ -3,70 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Control de Autobuses - QR</title>
-    <link rel="stylesheet" href="style.css?v=2.0">
-    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <title>Control de Entrada y Salida - Transportes</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-    <header>
-        <h1>Control de Entradas y Salidas de Autobuses</h1>
-        <p>Sistema de Escaneo QR para Transporte Extraurbano</p>
-    </header>
-
-    <main class="container">
-        <section class="scanner-section">
-            <h2><span class="icon">📷</span> Escáner de Código QR</h2>
-            <div id="reader"></div>
-            
-            <div id="result-container" class="hidden">
-                <p class="bus-detectado-alert"><strong>Autobús Detectado:</strong> <span id="qr-data">Ninguno</span></p>
-                
-                <div id="step-actividad">
-                    <p class="instruccion">¿Qué acción va a realizar el autobús?</p>
-                    <div class="grid-acciones">
-                        <button class="btn btn-ruta" onclick="seleccionarActividad('RUTA')">Verde Ruta</button>
-                        <button class="btn btn-taller" onclick="seleccionarActividad('TALLER')">Rojo Taller</button>
-                        <button class="btn btn-apoyo" onclick="seleccionarActividad('APOYO')">Beige Apoyo</button>
-                        <button class="btn btn-viaje" onclick="seleccionarActividad('VIAJE')">Azul Viaje</button>
-                        <button class="btn btn-lavado" onclick="seleccionarActividad('LAVADO')">Celeste Lavado</button>
-                    </div>
-                </div>
-
-                <div id="step-direccion" class="hidden">
-                    <p class="instruccion">Registrar movimiento para: <span id="actividad-seleccionada"></span></p>
-                    <div class="actions">
-                        <button id="btn-entrada" class="btn btn-entrada">Marcar Entrada</button>
-                        <button id="btn-salida" class="btn btn-salida">Marcar Salida</button>
-                    </div>
-                    <button class="btn-regresar" onclick="regresarAPaso1()">← Volver a cambiar acción</button>
-                </div>
+    <div class="container">
+        <h2>Control de Frecuencias y Flota</h2>
+        
+        <!-- Configuración del registro -->
+        <div class="panel-control">
+            <div class="grupo">
+                <label>Acción:</label>
+                <select id="accion" onchange="evaluarTipoSalida()">
+                    <option value="Entrada">Entrada</option>
+                    <option value="Salida">Salida</option>
+                </select>
             </div>
-        </section>
 
-        <section class="logs-section">
-            <h2><span class="icon">📋</span> Registro de Movimientos (Hoy)</h2>
-            <div class="table-responsive">
-                <table id="logs-table">
-                    <thead>
-                        <tr>
-                            <th>Fecha y Hora</th>
-                            <th>Autobús</th>
-                            <th>Acción / Estado</th>
-                            <th>Movimiento</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        </tbody>
-                </table>
+            <div class="grupo" id="contenedor-tipo-salida" style="display: none;">
+                <label>Tipo de Salida:</label>
+                <select id="tipoSalida">
+                    <option value="Ruta">Ruta</option>
+                    <option value="Taller / Mantenimiento">Taller / Mantenimiento</option>
+                    <option value="Limpieza">Limpieza</option>
+                    <option value="Especial">Viaje Especial</option>
+                </select>
             </div>
-        </section>
-    </main>
+        </div>
 
-    <footer>
-        <p>&copy; 2026 - Sistema de Control de Transportes</p>
-    </footer>
+        <!-- Input donde el lector QR simula el teclado -->
+        <div class="seccion-escaneo">
+            <input type="text" id="lectorQR" placeholder="Haz clic aquí antes de escanear el QR..." autofocus>
+            <button onclick="procesarEscaneo()">Registrar Manual</button>
+        </div>
 
-    <script src="script.js?v=2.0"></script>
+        <!-- Pantalla de confirmación -->
+        <div id="feedback" class="feedback">Esperando escaneo...</div>
+
+        <!-- Historial de la sesión actual -->
+        <h3>Registros de esta Sesión</h3>
+        <table id="tablaRegistros">
+            <thead>
+                <tr>
+                    <th>Placa</th>
+                    <th>Movimiento</th>
+                    <th>Detalle/Tipo</th>
+                    <th>Fecha y Hora</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Aquí se irán agregando las filas automáticamente -->
+            </tbody>
+        </table>
+
+        <button id="btnDescargar" class="btn-descargar" onclick="descargarExcel()">Descargar Reporte para Excel</button>
+    </div>
+
+    <script src="script.js"></script>
 </body>
 </html>
