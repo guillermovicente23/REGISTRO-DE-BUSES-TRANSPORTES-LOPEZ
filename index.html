@@ -14,6 +14,42 @@
             background-color: #f0f0f0;
             padding: 20px;
         }
+        /* Pantalla de Login */
+        .contenedor-login {
+            max-width: 350px;
+            margin: 60px auto;
+            padding: 30px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+        .input-login {
+            width: 90%;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .btn-login {
+            width: 96%;
+            padding: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            color: white;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .btn-login:hover { background-color: #0056b3; }
+
+        /* Panel Principal de la App (Oculto al inicio) */
+        .panel-principal {
+            display: none;
+        }
+        
         .caja-escaner {
             max-width: 400px;
             margin: 20px auto;
@@ -52,11 +88,6 @@
             color: #007bff;
             background-color: #e9ecef;
         }
-        .campo-placa:focus {
-            background-color: #fff;
-            border-color: #007bff;
-            outline: none;
-        }
         .btn-registrar {
             width: 85%;
             padding: 15px;
@@ -68,12 +99,11 @@
             border-radius: 5px;
             cursor: pointer;
             margin-top: 15px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
         .btn-registrar:hover { background-color: #218838; }
         
-        /* Estilo para el nuevo botón de eliminar */
         .btn-deshacer {
+            display: none; /* Se activa solo si es admin */
             width: 85%;
             padding: 10px;
             font-size: 14px;
@@ -95,37 +125,97 @@
             font-weight: bold;
             font-size: 16px;
         }
+        .usuario-activo {
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
 
-    <h1>Control de Flujo de Autobuses</h1>
-    
-    <div class="contenedor-formulario">
-        <h3>1. Tipo de movimiento:</h3>
-        <label class="opcion-radio">
-            <input type="radio" name="tipoMovimiento" value="ENTRADA" checked> Entrada
-        </label>
-        <label class="opcion-radio">
-            <input type="radio" name="tipoMovimiento" value="SALIDA"> Salida
-        </label>
-
-        <h3>2. Placa detectada/manual:</h3>
-        <input type="text" id="placa-input" class="campo-placa" placeholder="ESPERANDO QR..." autocomplete="off">
+    <div id="pantalla-login" class="contenedor-login">
+        <h2>Control de Autobuses</h2>
+        <p>Inicia sesión para continuar</p>
+        <div id="error-login" style="color: red; font-weight: bold; margin-bottom: 10px;"></div>
         
-        <button id="btn-enviar" class="btn-registrar" onclick="enviarDatosAGoogle()">AGREGAR REGISTRO</button>
+        <input type="text" id="usuario" class="input-login" placeholder="Usuario">
+        <input type="password" id="contrasena" class="input-login" placeholder="Contraseña">
         
-        <button id="btn-borrar" class="btn-deshacer" onclick="eliminarUltimoRegistro()">¿Te equivocaste? Deshacer último registro</button>
-        
-        <div id="estado-envio" class="estado-envio"></div>
+        <button class="btn-login" onclick="autenticarUsuario()">INGRESAR</button>
     </div>
 
-    <p>Apunta la cámara al código QR o escribe la placa manualmente arriba</p>
-    <div id="lector-camara" class="caja-escaner"></div>
+
+    <div id="panel-sistema" class="panel-principal">
+        <h1>Control de Flujo de Autobuses</h1>
+        <div class="usuario-activo">Sesión activa: <strong id="nombre-sesion"></strong></div>
+        
+        <div class="contenedor-formulario">
+            <h3>1. Tipo de movimiento:</h3>
+            <label class="opcion-radio">
+                <input type="radio" name="tipoMovimiento" value="ENTRADA" checked> Entrada
+            </label>
+            <label class="opcion-radio">
+                <input type="radio" name="tipoMovimiento" value="SALIDA"> Salida
+            </label>
+
+            <h3>2. Placa detectada/manual:</h3>
+            <input type="text" id="placa-input" class="campo-placa" placeholder="ESPERANDO QR..." autocomplete="off">
+            
+            <button id="btn-enviar" class="btn-registrar" onclick="enviarDatosAGoogle()">AGREGAR REGISTRO</button>
+            
+            <button id="btn-borrar" class="btn-deshacer" onclick="eliminarUltimoRegistro()">¿Te equivocaste? Deshacer último registro</button>
+            
+            <div id="estado-envio" class="estado-envio"></div>
+        </div>
+
+        <p>Apunta la cámara al código QR o escribe la placa manualmente arriba</p>
+        <div id="lector-camara" class="caja-escaner"></div>
+    </div>
 
     <script>
-        // URL de tu Google Apps Script configurada correctamente
         const URL_GOOGLE_SCRIPT = 'https://script.google.com/macros/s/AKfycbypXTYZioHLgtI517yEJ8t6iPov9o7B3e7Ybi0cr8kZLpIErCde4OC0uLXBw5CP-S1c/exec';
+        
+        // Base de datos local de usuarios y roles
+        const USUARIOS_VALIDOS = {
+            "admin": { contrasena: "admin123", rol: "ADMIN" },
+            "operador1": { contrasena: "op123", rol: "OPERADOR" },
+            "operador2": { contrasena: "op456", rol: "OPERADOR" }
+        };
+
+        let usuarioLogueado = null;
+        let escáner = null;
+
+        // Función para validar el Login
+        function autenticarUsuario() {
+            const userIn = document.getElementById('usuario').value.trim();
+            const passIn = document.getElementById('contrasena').value;
+            const divError = document.getElementById('error-login');
+
+            if (USUARIOS_VALIDOS[userIn] && USUARIOS_VALIDOS[userIn].contrasena === passIn) {
+                usuarioLogueado = USUARIOS_VALIDOS[userIn];
+                
+                // Ocultar login y mostrar el sistema
+                document.getElementById('pantalla-login').style.display = 'none';
+                document.getElementById('panel-sistema').style.display = 'block';
+                document.getElementById('nombre-sesion').innerText = `${userIn.toUpperCase()} (${usuarioLogueado.rol})`;
+
+                // Mostrar el botón de borrar ÚNICAMENTE si es Administrador
+                if (usuarioLogueado.rol === "ADMIN") {
+                    document.getElementById('btn-borrar').style.display = 'inline-block';
+                }
+
+                // Iniciar la cámara solo después de loguearse con éxito
+                iniciarEscaner();
+            } else {
+                divError.innerText = "Usuario o contraseña incorrectos.";
+            }
+        }
+
+        function iniciarEscaner() {
+            escáner = new Html5QrcodeScanner("lector-camara", { fps: 10, qrbox: 250 }, false);
+            escáner.render(lecturaExitosa, lecturaFallida);
+        }
 
         function lecturaExitosa(textoEscaneado, resultadoDetallado) {
             const inputPlaca = document.getElementById('placa-input');
@@ -138,7 +228,6 @@
 
         function lecturaFallida(error) {}
 
-        // ENVIAR / REGISTRAR NUEVO BUS
         function enviarDatosAGoogle() {
             const inputPlaca = document.getElementById('placa-input');
             const divEstado = document.getElementById('estado-envio');
@@ -162,7 +251,7 @@
             divEstado.innerText = "Enviando datos...";
 
             const datosFormulario = new URLSearchParams();
-            datosFormulario.append('accion', 'REGISTRAR'); // <--- Le avisa a Google qué hacer
+            datosFormulario.append('accion', 'REGISTRAR');
             datosFormulario.append('placa', placaTexto);
             datosFormulario.append('movimiento', movimientoSeleccionado);
 
@@ -186,22 +275,26 @@
             });
         }
 
-        // NUEVO: FUNCIÓN PARA BORRAR LA ÚLTIMA FILA
         function eliminarUltimoRegistro() {
+            // Protección extra en JavaScript por si intentan activar el botón por consola
+            if (!usuarioLogueado || usuarioLogueado.rol !== "ADMIN") {
+                alert("No tienes permisos para realizar esta acción.");
+                return;
+            }
+
             const divEstado = document.getElementById('estado-envio');
             const botonBorrar = document.getElementById('btn-borrar');
 
-            // Preguntar al usuario para estar 100% seguros
             if (!confirm("¿Estás seguro de que deseas eliminar el ÚLTIMO registro de la lista?")) {
                 return; 
             }
 
             botonBorrar.disabled = true;
             divEstado.style.color = "#dc3545";
-            divEstado.innerText = "Eliminando última fila de Google Sheets...";
+            divEstado.innerText = "Eliminando última fila...";
 
             const datosFormulario = new URLSearchParams();
-            datosFormulario.append('accion', 'ELIMINAR'); // <--- Le indica a Google que borre la fila
+            datosFormulario.append('accion', 'ELIMINAR');
 
             fetch(URL_GOOGLE_SCRIPT, {
                 method: 'POST',
@@ -221,9 +314,6 @@
                 setTimeout(() => { botonBorrar.disabled = false; divEstado.innerText = ""; }, 2000);
             });
         }
-
-        const escáner = new Html5QrcodeScanner("lector-camara", { fps: 10, qrbox: 250 }, false);
-        escáner.render(lecturaExitosa, lecturaFallida);
     </script>
 
 </body>
