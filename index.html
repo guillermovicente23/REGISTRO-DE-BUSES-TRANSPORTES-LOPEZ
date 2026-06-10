@@ -195,125 +195,25 @@
     <script>
         const URL_GOOGLE_SCRIPT = 'https://script.google.com/macros/s/AKfycbypXTYZioHLgtI517yEJ8t6iPov9o7B3e7Ybi0cr8kZLpIErCde4OC0uLXBw5CP-S1c/exec';
         
-        // Listado de usuarios actualizado con el usuario "taller"
+        // Base de datos local estandarizada en minúsculas
         const USUARIOS_VALIDOS = {
             "admin": { contrasena: "admin123", rol: "ADMIN" },
             "operador1": { contrasena: "op123", rol: "OPERADOR" },
             "operador2": { contrasena: "op456", rol: "OPERADOR" },
-            "taller": { contrasena: "taller2026", rol: "OPERADOR" } // <--- Agregado con rol OPERADOR
+            "taller": { contrasena: "taller2026", rol: "OPERADOR" }
         };
 
         let usuarioLogueado = null;
         let escáner = null;
 
         function autenticarUsuario() {
-            const userIn = document.getElementById('usuario').value.trim();
-            const passIn = document.getElementById('contrasena').value;
+            // .toLowerCase() convierte el usuario y la contraseña a minúsculas para evitar bloqueos por mayúsculas fijas
+            const userIn = document.getElementById('usuario').value.trim().toLowerCase();
+            const passIn = document.getElementById('contrasena').value.trim().toLowerCase();
             const divError = document.getElementById('error-login');
 
             if (USUARIOS_VALIDOS[userIn] && USUARIOS_VALIDOS[userIn].contrasena === passIn) {
                 usuarioLogueado = USUARIOS_VALIDOS[userIn];
                 document.getElementById('pantalla-login').style.display = 'none';
                 document.getElementById('panel-sistema').style.display = 'block';
-                document.getElementById('nombre-sesion').innerText = `${userIn.toUpperCase()}`;
-
-                // Solo el Administrador ve el botón de borrar
-                if (usuarioLogueado.rol === "ADMIN") {
-                    document.getElementById('btn-borrar').style.display = 'inline-block';
-                }
-                iniciarEscaner();
-            } else {
-                divError.innerText = "Usuario o contraseña incorrectos.";
-            }
-        }
-
-        function iniciarEscaner() {
-            escáner = new Html5QrcodeScanner("lector-camara", { fps: 10, qrbox: 250 }, false);
-            escáner.render(lecturaExitosa, lecturaFallida);
-        }
-
-        function lecturaExitosa(textoEscaneado, resultadoDetallado) {
-            const inputPlaca = document.getElementById('placa-input');
-            if (inputPlaca.value !== textoEscaneado) {
-                inputPlaca.value = textoEscaneado.toUpperCase();
-                inputPlaca.style.backgroundColor = "#d4edda";
-                setTimeout(() => { inputPlaca.style.backgroundColor = "#e9ecef"; }, 500);
-            }
-        }
-
-        function lecturaFallida(error) {}
-
-        function enviarDatosAGoogle() {
-            const inputPlaca = document.getElementById('placa-input');
-            const divEstado = document.getElementById('estado-envio');
-            const boton = document.getElementById('btn-enviar');
-            const selectTipo = document.getElementById('tipo-servicio');
-            const placaTexto = inputPlaca.value.trim();
-
-            if (placaTexto === "" || placaTexto === "ESPERANDO QR...") {
-                divEstado.style.color = "#dc3545";
-                divEstado.innerText = "Por favor, ingresa o escanea una placa.";
-                return;
-            }
-
-            const opciones = document.getElementsByName('tipoMovimiento');
-            let movimientoSeleccionado = "";
-            for (const opcion of opciones) {
-                if (opcion.checked) { movimientoSeleccionado = opcion.value; break; }
-            }
-
-            const tipoSeleccionado = selectTipo.value;
-
-            boton.disabled = true;
-            divEstado.style.color = "#ffc107";
-            divEstado.innerText = "Enviando datos...";
-
-            const datosFormulario = new URLSearchParams();
-            datosFormulario.append('accion', 'REGISTRAR');
-            datosFormulario.append('placa', placaTexto);
-            datosFormulario.append('movimiento', movimientoSeleccionado);
-            datosFormulario.append('tipo', tipoSeleccionado);
-
-            fetch(URL_GOOGLE_SCRIPT, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: datosFormulario.toString()
-            })
-            .then(() => {
-                divEstado.style.color = "#28a745";
-                divEstado.innerText = `¡${movimientoSeleccionado} (${tipoSeleccionado}) registrada con éxito!`;
-                inputPlaca.value = ""; 
-            })
-            .catch(error => {
-                divEstado.style.color = "#dc3545";
-                divEstado.innerText = "Error de red.";
-            })
-            .finally(() => {
-                setTimeout(() => { boton.disabled = false; divEstado.innerText = ""; }, 2000);
-            });
-        }
-
-        function eliminarUltimoRegistro() {
-            if (!usuarioLogueado || usuarioLogueado.rol !== "ADMIN") {
-                alert("No tienes permisos.");
-                return;
-            }
-
-            const divEstado = document.getElementById('estado-envio');
-            const botonBorrar = document.getElementById('btn-borrar');
-
-            if (!confirm("¿Estás seguro de que deseas eliminar el ÚLTIMO registro de la lista?")) {
-                return; 
-            }
-
-            botonBorrar.disabled = true;
-            divEstado.style.color = "#dc3545";
-            divEstado.innerText = "Eliminando última fila...";
-
-            const datosFormulario = new URLSearchParams();
-            datosFormulario.append('accion', 'ELIMINAR');
-
-            fetch(URL_GOOGLE_SCRIPT, {
-                method: 'POST',
-                mode: 'no
+                document.getElementById('nombre-sesion').innerText = `${userIn.toUpperCase()
