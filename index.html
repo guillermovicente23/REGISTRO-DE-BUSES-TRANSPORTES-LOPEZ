@@ -2,22 +2,70 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Control de Flota EcoSort</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="https://rawgit.com/schmich/instascan-builds/master/instascan.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de Autobuses - Escáner QR</title>
+    <link rel="stylesheet" href="css/estilos.css">
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 </head>
 <body>
-    <h1>Registro de Autobuses</h1>
-    <div id="contenedor-alertas" class="alerta-dinamica oculta"></div>
-    <video id="preview"></video>
-    
-    <table>
-        <thead>
-            <tr><th>Placa</th><th>Hora de Registro</th></tr>
-        </thead>
-        <tbody id="tabla-registros"></tbody>
-    </table>
 
-    <script src="script.js"></script>
+    <div class="container">
+        <h1>Control de Entradas y Salidas</h1>
+        <p class="subtitle">Escanea el código QR del autobús para registrar su movimiento</p>
+        
+        <div id="reader" class="scanner-box"></div>
+        
+        <div id="resultado" class="mensaje"></div>
+    </div>
+
+    <script>
+        // Función que se ejecuta cuando el escáner detecta un código QR de manera exitosa
+        function onScanSuccess(decodedText, decodedResult) {
+            // Detenemos el escáner momentáneamente para evitar múltiples lecturas
+            html5QrcodeScanner.clear();
+            
+            document.getElementById('resultado').className = "mensaje procesando";
+            document.getElementById('resultado').innerText = "Procesando código: " + decodedText;
+
+            // Enviamos el código detectado al backend de Java mediante una petición POST
+            fetch('ControladorAutobuses', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'codigoBus=' + encodeURIComponent(decodedText)
+            })
+            .then(response => response.text())
+            .then(data => {
+                // Mostramos la respuesta del servidor (Ej: "Entrada registrada exitosamente")
+                document.getElementById('resultado').className = "mensaje exito";
+                document.getElementById('resultado').innerText = data;
+                
+                // Reiniciamos el escáner después de 3 segundos para el siguiente autobús
+                setTimeout(reiniciarEscaner, 3000);
+            })
+            .catch(error => {
+                document.getElementById('resultado').className = "mensaje error";
+                document.getElementById('resultado').innerText = "Error al conectar con el servidor.";
+                setTimeout(reiniciarEscaner, 3000);
+            });
+        }
+
+        function onScanFailure(error) {
+            // Errores menores de enfoque o lectura se ignoran para no saturar la pantalla
+        }
+
+        let html5QrcodeScanner;
+        function reiniciarEscaner() {
+            document.getElementById('resultado').innerText = "";
+            document.getElementById('resultado').className = "mensaje";
+            
+            html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: {width: 250, height: 250} }, /* verbose= */ false);
+            html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+        }
+
+        // Inicializamos el escáner al cargar la página
+        reiniciarEscaner();
+    </script>
 </body>
 </html>
