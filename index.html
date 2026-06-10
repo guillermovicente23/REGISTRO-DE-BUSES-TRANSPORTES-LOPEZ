@@ -3,92 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Control de Autobuses - Escáner QR</title>
-    <link rel="stylesheet" href="css/estilos.css">
+    <title>Prueba Básica de Escaneo</title>
+    
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
+    <style>
+        /* Estilos muy básicos para centrar la prueba en pantalla */
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f0f0f0;
+            padding: 20px;
+        }
+        .caja-escaner {
+            max-width: 400px;
+            margin: 20px auto;
+            border: 3px solid #333;
+            background-color: #fff;
+            border-radius: 8px;
+        }
+        .pantalla-placa {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #e9ecef;
+            display: inline-block;
+            border-radius: 5px;
+        }
+    </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>EcoSort Trans-Control</h1>
-        <p class="subtitle">Selecciona el tipo de movimiento antes de escanear la unidad</p>
-        
-        <div class="menu-control">
-            <button id="btn-entrada" class="btn-toggle active" onclick="setMovimiento('ENTRADA')">📥 ENTRADA</button>
-            <button id="btn-salida" class="btn-toggle" onclick="setMovimiento('SALIDA')">📤 SALIDA</button>
-        </div>
-        
-        <div id="reader" class="scanner-box"></div>
-        
-        <div id="resultado" class="mensaje"></div>
+    <h1>Paso 1: Detectar Placa</h1>
+    <p>Apunta la cámara hacia el código QR para ver qué texto contiene</p>
+
+    <div id="lector-camara" class="caja-escaner"></div>
+
+    <div>
+        <span>Placa detectada:</span><br>
+        <div id="placa-resultado" class="pantalla-placa">Esperando código...</div>
     </div>
 
     <script>
-        // Por defecto el sistema inicia listo para marcar Entrada
-        let movimientoActual = "ENTRADA"; 
-
-        function setMovimiento(tipo) {
-            movimientoActual = tipo;
-            document.getElementById('btn-entrada').classList.remove('active');
-            document.getElementById('btn-salida').classList.remove('active');
+        // Esta función se ejecuta inmediatamente cuando la cámara lee cualquier QR
+        function lecturaExitosa(textoEscaneado, resultadoDetallado) {
+            // Mostramos el texto limpio en la pantalla del navegador
+            document.getElementById('placa-resultado').innerText = textoEscaneado;
             
-            if(tipo === 'ENTRADA') {
-                document.getElementById('btn-entrada').classList.add('active');
-            } else {
-                document.getElementById('btn-salida').classList.add('active');
-            }
+            // Nota: Aquí no estamos usando JSON.parse() ni enviando nada a Java,
+            // solo queremos ver el texto plano en pantalla.
         }
 
-        // Esta función se activa en automático cuando la cámara lee un QR
-        function onScanSuccess(decodedText, decodedResult) {
-            // Detener el escáner momentáneamente para evitar lecturas repetidas por segundo
-            html5QrcodeScanner.clear();
-            
-            // Limpiar el ID de la placa (data) quitando espacios extra
-            const placaBus = decodedText.trim();
-
-            document.getElementById('resultado').className = "mensaje procesando";
-            document.getElementById('resultado').innerText = "Procesando Placa: " + placaBus;
-
-            // Enviamos los datos al Backend de Java por método POST
-            fetch('ControladorAutobuses', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: 'codigoBus=' + encodeURIComponent(placaBus) + '&movimiento=' + encodeURIComponent(movimientoActual)
-            })
-            .then(response => response.text())
-            .then(data => {
-                // El backend nos responde con el éxito del registro
-                document.getElementById('resultado').className = "mensaje exito";
-                document.getElementById('resultado').innerText = data;
-                
-                // Reiniciar la cámara en 3 segundos para el próximo autobús
-                setTimeout(reiniciarEscaner, 3000);
-            })
-            .catch(error => {
-                document.getElementById('resultado').className = "mensaje error";
-                document.getElementById('resultado').innerText = "Error de comunicación con el servidor.";
-                setTimeout(reiniciarEscaner, 3000);
-            });
+        function lecturaFallida(error) {
+            // Ignoramos errores de enfoque continuos de la cámara
         }
 
-        function onScanFailure(error) {
-            // Ignorar fallos continuos de enfoque de cámara
-        }
-
-        let html5QrcodeScanner;
-        function reiniciarEscaner() {
-            document.getElementById('resultado').innerText = "";
-            document.getElementById('resultado').className = "mensaje";
-            
-            html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 14, qrbox: {width: 250, height: 250} }, false);
-            html5QrcodeScanner.render(onScanSuccess, onScanFailure);
-        }
-
-        // Arrancar la cámara al abrir la aplicación
-        reiniciarEscaner();
+        // Configuramos e iniciamos el escáner
+        const escáner = new Html5QrcodeScanner("lector-camara", { fps: 10, qrbox: 250 }, false);
+        escáner.render(lecturaExitosa, lecturaFallida);
     </script>
+
 </body>
 </html>
