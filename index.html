@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Control de Flota - QR</title>
+    <title>Control de Flota - Privado</title>
     
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
     
     <style>
         :root {
@@ -14,7 +14,9 @@
             --text-main: #2c3e50;
             --text-muted: #7f8c8d;
             --primary: #3498db;
+            --success: #2ecc71;
             --danger: #e74c3c;
+            --border-color: #e2e8f0;
         }
 
         * {
@@ -28,69 +30,107 @@
             background-color: var(--bg-color);
             color: var(--text-main);
             padding: 20px;
-        }
-
-        .main-header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding: 10px 0;
-        }
-
-        .main-header h1 {
-            font-size: 2.2rem;
-            color: var(--text-main);
-            margin-bottom: 5px;
-        }
-
-        .date-display {
-            color: var(--text-muted);
-            font-size: 1rem;
-            text-transform: capitalize;
-        }
-
-        .dashboard-container {
-            max-width: 500px;
-            margin: 0 auto;
-            display: flex;
-            flex-direction: column;
-            gap: 25px;
-        }
-
-        .scanner-section {
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 25px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
             display: flex;
             justify-content: center;
-        }
-
-        .scanner-box {
-            display: flex;
-            flex-direction: column;
             align-items: center;
-            gap: 20px;
-            width: 100%;
+            min-height: 100vh;
         }
 
-        .camera-container {
+        .auth-container, .dashboard-container {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            width: 100%;
+            max-width: 420px;
+            text-align: center;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            color: var(--text-main);
+        }
+
+        p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            text-align: left;
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus {
+            border-color: var(--primary);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: #fff;
+            margin-top: 15px;
+        }
+
+        .camera-box {
             width: 100%;
             aspect-ratio: 1 / 1;
             background: #000;
             border-radius: 12px;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            margin-bottom: 20px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
         }
 
-        /* Lector QR nativo */
         #reader {
-            width: 100%;
-            height: 100%;
+            width: 100% !important;
+            height: 100% !important;
+            border: none !important;
         }
 
         #reader video {
             object-fit: cover !important;
+            width: 100% !important;
+            height: 100% !important;
         }
 
         .scanner-laser {
@@ -101,7 +141,7 @@
             top: 0;
             box-shadow: 0 0 10px var(--danger);
             animation: scan 2s linear infinite;
-            z-index: 10;
+            z-index: 100;
             pointer-events: none;
         }
 
@@ -110,59 +150,101 @@
             50% { top: 100%; }
             100% { top: 0%; }
         }
-
-        .btn {
-            padding: 14px 28px;
-            border: none;
-            border-radius: 8px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.2s, transform 0.1s;
-            width: 100%;
-            max-width: 250px;
-        }
-
-        .btn:active {
-            transform: scale(0.98);
-        }
-
-        .btn-primary {
-            background: var(--primary);
-            color: #fff;
-        }
-
-        @media (max-width: 480px) {
-            .main-header h1 { font-size: 1.8rem; }
-        }
     </style>
 </head>
 <body>
 
-    <header class="main-header">
-        <h1>Control de Accesos</h1>
-        <p class="date-display" id="currentDate">Cargando fecha...</p>
-    </header>
+    <div class="auth-container" id="loginSection">
+        <h1>Iniciar Sesión</h1>
+        <p>Control de Accesos Privado</p>
+        <div class="form-group">
+            <label for="username">Usuario</label>
+            <input type="text" id="username" placeholder="Ingresa tu usuario">
+        </div>
+        <div class="form-group">
+            <label for="password">Contraseña</label>
+            <input type="password" id="password" placeholder="Ingresa tu contraseña">
+        </div>
+        <button class="btn btn-primary" onclick="validarAcceso()">Ingresar</button>
+    </div>
 
-    <main class="dashboard-container">
+    <div class="dashboard-container hidden" id="scannerSection">
+        <h1>Escanear Unidad</h1>
+        <p id="dateDisplay">Conectando cámara...</p>
         
-        <section class="scanner-section">
-            <div class="scanner-box">
-                <div class="camera-container">
-                    <div id="reader"></div>
-                    <div class="scanner-laser"></div>
-                </div>
-                <button class="btn btn-primary" id="btnIniciar">Iniciar Escáner</button>
-            </div>
-        </section>
+        <div class="camera-box">
+            <div id="reader"></div>
+            <div class="scanner-laser" id="laser"></div>
+        </div>
 
-    </main>
+        <button class="btn btn-primary" id="btnAccion" onclick="controlarEscaner()">Iniciar Escáner</button>
+    </div>
 
     <script>
+        let html5QrCode;
+        let escanerCorriendo = false;
+
         const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-        document.getElementById('currentDate').innerText = new Date().toLocaleDateString('es-ES', dateOptions);
+        document.getElementById('dateDisplay').innerText = new Date().toLocaleDateString('es-ES', dateOptions);
+
+        function validarAcceso() {
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+
+            if (user === "admin" && pass === "1234") {
+                document.getElementById('loginSection').classList.add('hidden');
+                document.getElementById('scannerSection').classList.remove('hidden');
+            } else {
+                alert("Credenciales incorrectas");
+            }
+        }
+
+        function controlarEscaner() {
+            if (!escanerCorriendo) {
+                document.getElementById('laser').style.display = 'block';
+                html5QrCode = new Html5Qrcode("reader");
+                
+                html5QrCode.start(
+                    { facingMode: "environment" },
+                    { fps: 10, qrbox: { width: 250, height: 250 } },
+                    onScanSuccess
+                ).then(() => {
+                    escanerCorriendo = true;
+                    const btn = document.getElementById('btnAccion');
+                    btn.innerText = "Detener Escáner";
+                    btn.className = "btn btn-danger";
+                }).catch(err => {
+                    alert("Error abriendo cámara: Revisa los permisos de tu navegador.");
+                });
+            } else {
+                apagarCamara();
+            }
+        }
+
+        function apagarCamara() {
+            if (html5QrCode) {
+                html5QrCode.stop().then(() => {
+                    escanerCorriendo = false;
+                    document.getElementById('laser').style.display = 'none';
+                    const btn = document.getElementById('btnAccion');
+                    btn.innerText = "Iniciar Escáner";
+                    btn.className = "btn btn-primary";
+                }).catch(err => console.error(err));
+            }
+        }
+
+        function onScanSuccess(decodedText) {
+            apagarCamara();
+
+            let tipoMovimiento = "Entrada";
+            if (decodedText.toLowerCase().includes("salida")) {
+                tipoMovimiento = "Salida";
+            }
+
+            alert(`Escaneo Exitoso\nUnidad: ${decodedText}\nMovimiento: ${tipoMovimiento}`);
+
+            // PEGA AQUÍ TU FUNCIÓN FETCH PARA GOOGLE SHEETS
+        }
     </script>
-    
-    <script src="script.js"></script>
 </body>
 </html>
