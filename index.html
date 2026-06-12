@@ -27,85 +27,91 @@
         body {
             background-color: var(--bg-color);
             color: var(--text-main);
-            padding: 15px;
+            padding: 20px;
         }
 
         .main-header {
             text-align: center;
-            margin-bottom: 25px;
+            margin-bottom: 30px;
             padding: 10px 0;
         }
 
         .main-header h1 {
-            font-size: 1.8rem;
+            font-size: 2.2rem;
             color: var(--text-main);
+            margin-bottom: 5px;
         }
 
         .date-display {
             color: var(--text-muted);
-            font-size: 0.9rem;
+            font-size: 1rem;
             text-transform: capitalize;
         }
 
         .dashboard-container {
-            max-width: 600px;
+            max-width: 700px;
             margin: 0 auto;
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 25px;
         }
 
         .metrics-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 15px;
+            gap: 20px;
+            width: 100%;
         }
 
         .card {
             background: var(--card-bg);
-            padding: 15px;
+            padding: 20px;
             border-radius: 12px;
             text-align: center;
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            border-left: 5px solid var(--primary);
+            border-left: 6px solid var(--primary);
         }
 
         .card h3 {
-            font-size: 0.9rem;
+            font-size: 1rem;
             color: var(--text-muted);
-            margin-bottom: 5px;
+            margin-bottom: 8px;
         }
 
         .card-in { border-left-color: var(--success); }
         .card-out { border-left-color: var(--danger); }
 
         .metric-number {
-            font-size: 1.8rem;
+            font-size: 2.2rem;
             font-weight: bold;
         }
 
         .scanner-section {
             background: var(--card-bg);
             border-radius: 12px;
-            padding: 20px;
+            padding: 25px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: center;
         }
 
         .scanner-box {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 15px;
+            gap: 20px;
+            width: 100%;
+            max-width: 320px;
         }
 
         .camera-placeholder {
             width: 100%;
-            max-width: 280px;
             aspect-ratio: 1 / 1;
             background: #000;
-            border-radius: 8px;
+            border-radius: 12px;
             position: relative;
             overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
         }
 
         #webcam-preview {
@@ -117,10 +123,10 @@
         .scanner-laser {
             position: absolute;
             width: 100%;
-            height: 3px;
+            height: 4px;
             background: var(--danger);
             top: 0;
-            box-shadow: 0 0 8px var(--danger);
+            box-shadow: 0 0 10px var(--danger);
             animation: scan 2s linear infinite;
         }
 
@@ -131,15 +137,14 @@
         }
 
         .btn {
-            padding: 12px 24px;
+            padding: 14px 28px;
             border: none;
             border-radius: 8px;
-            font-size: 1rem;
+            font-size: 1.1rem;
             font-weight: bold;
             cursor: pointer;
             transition: background 0.2s, transform 0.1s;
             width: 100%;
-            max-width: 200px;
         }
 
         .btn:active {
@@ -154,13 +159,14 @@
         .history-section {
             background: var(--card-bg);
             border-radius: 12px;
-            padding: 20px;
+            padding: 25px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
         }
 
         .history-section h2 {
-            font-size: 1.2rem;
-            margin-bottom: 15px;
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            color: var(--text-main);
         }
 
         .table-responsive {
@@ -171,23 +177,24 @@
             width: 100%;
             border-collapse: collapse;
             text-align: left;
-            font-size: 0.95rem;
+            font-size: 1rem;
         }
 
         .history-table th, .history-table td {
-            padding: 12px;
+            padding: 14px;
             border-bottom: 1px solid var(--border-color);
         }
 
         .history-table th {
             color: var(--text-muted);
             font-weight: 600;
+            background-color: #fafbfc;
         }
 
         .badge {
-            padding: 4px 8px;
+            padding: 5px 10px;
             border-radius: 6px;
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             font-weight: bold;
             display: inline-block;
         }
@@ -196,9 +203,10 @@
         .badge-out { background: #fdedec; color: var(--danger); }
 
         @media (max-width: 480px) {
-            .main-header h1 { font-size: 1.5rem; }
-            .card h3 { font-size: 0.8rem; }
-            .metric-number { font-size: 1.5rem; }
+            .main-header h1 { font-size: 1.8rem; }
+            .metrics-grid { gap: 12px; }
+            .card { padding: 15px; }
+            .metric-number { font-size: 1.8rem; }
         }
     </style>
 </head>
@@ -206,10 +214,58 @@
 
     <header class="main-header">
         <h1>Control de Accesos</h1>
-        <p class="date-display" id="currentDate">Registro de Unidades</p>
+        <p class="date-display" id="currentDate">Cargando fecha...</p>
     </header>
 
     <main class="dashboard-container">
         
         <section class="metrics-grid">
             <div class="card card-in">
+                <h3>Entradas Hoy</h3>
+                <p class="metric-number" id="contadorEntradas">0</p>
+            </div>
+            <div class="card card-out">
+                <h3>Salidas Hoy</h3>
+                <p class="metric-number" id="contadorSalidas">0</p>
+            </div>
+        </section>
+
+        <section class="scanner-section">
+            <div class="scanner-box">
+                <div class="camera-placeholder">
+                    <video id="webcam-preview"></video>
+                    <div class="scanner-laser"></div>
+                </div>
+                <div class="scanner-actions">
+                    <button class="btn btn-primary" id="btnIniciar">Iniciar Escáner</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="history-section">
+            <h2>Movimientos Recientes</h2>
+            <div class="table-responsive">
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>Unidad</th>
+                            <th>Tipo</th>
+                            <th>Hora</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaHistorial">
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById('currentDate').innerText = new Date().toLocaleDateString('es-ES', dateOptions);
+    </script>
+    
+    <script src="script.js"></script>
+</body>
+</html>
