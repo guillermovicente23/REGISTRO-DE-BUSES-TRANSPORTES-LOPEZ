@@ -114,6 +114,7 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.15);
         }
 
+        /* Ajuste para que la librería renderice correctamente el lector */
         #webcam-preview {
             width: 100%;
             height: 100%;
@@ -128,6 +129,8 @@
             top: 0;
             box-shadow: 0 0 10px var(--danger);
             animation: scan 2s linear infinite;
+            z-index: 10;
+            pointer-events: none;
         }
 
         @keyframes scan {
@@ -155,52 +158,6 @@
             background: var(--primary);
             color: #fff;
         }
-
-        .history-section {
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 25px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-        }
-
-        .history-section h2 {
-            font-size: 1.4rem;
-            margin-bottom: 20px;
-            color: var(--text-main);
-        }
-
-        .table-responsive {
-            overflow-x: auto;
-        }
-
-        .history-table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: left;
-            font-size: 1rem;
-        }
-
-        .history-table th, .history-table td {
-            padding: 14px;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .history-table th {
-            color: var(--text-muted);
-            font-weight: 600;
-            background-color: #fafbfc;
-        }
-
-        .badge {
-            padding: 5px 10px;
-            border-radius: 6px;
-            font-size: 0.85rem;
-            font-weight: bold;
-            display: inline-block;
-        }
-
-        .badge-in { background: #e8f8f5; color: var(--success); }
-        .badge-out { background: #fdedec; color: var(--danger); }
 
         @media (max-width: 480px) {
             .main-header h1 { font-size: 1.8rem; }
@@ -233,29 +190,12 @@
         <section class="scanner-section">
             <div class="scanner-box">
                 <div class="camera-placeholder">
-                    <video id="webcam-preview"></video>
+                    <div id="webcam-preview"></div>
                     <div class="scanner-laser"></div>
                 </div>
                 <div class="scanner-actions">
                     <button class="btn btn-primary" id="btnIniciar">Iniciar Escáner</button>
                 </div>
-            </div>
-        </section>
-
-        <section class="history-section">
-            <h2>Movimientos Recientes</h2>
-            <div class="table-responsive">
-                <table class="history-table">
-                    <thead>
-                        <tr>
-                            <th>Unidad</th>
-                            <th>Tipo</th>
-                            <th>Hora</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tablaHistorial">
-                    </tbody>
-                </table>
             </div>
         </section>
 
