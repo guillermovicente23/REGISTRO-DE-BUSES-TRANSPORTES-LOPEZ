@@ -1,250 +1,344 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es"> 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Control de Flota - Privado</title>
+    <title>Control de Entradas y Salidas</title>
     
-    <script src="https://unpkg.com/html5-qrcode"></script>
-    
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
     <style>
-        :root {
-            --bg-color: #f4f6f9;
-            --card-bg: #ffffff;
-            --text-main: #2c3e50;
-            --text-muted: #7f8c8d;
-            --primary: #3498db;
-            --success: #2ecc71;
-            --danger: #e74c3c;
-            --border-color: #e2e8f0;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
         body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-
-        .auth-container, .dashboard-container {
-            background: var(--card-bg);
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-            width: 100%;
-            max-width: 420px;
+            font-family: Arial, sans-serif;
             text-align: center;
+            background-color: #f0f0f0;
+            padding: 20px;
         }
-
-        .hidden {
-            display: none !important;
+        /* Pantalla de Login */
+        .contenedor-login {
+            max-width: 350px;
+            margin: 60px auto;
+            padding: 30px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
         }
-
-        h1 {
-            font-size: 1.8rem;
-            margin-bottom: 10px;
-            color: var(--text-main);
+        .input-login {
+            width: 90%;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
         }
-
-        p {
-            color: var(--text-muted);
-            font-size: 0.95rem;
-            margin-bottom: 25px;
-        }
-
-        .form-group {
-            text-align: left;
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 8px;
-            font-size: 0.9rem;
-        }
-
-        .form-group input {
-            width: 100%;
+        .btn-login {
+            width: 96%;
             padding: 12px;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            font-size: 1rem;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-
-        .form-group input:focus {
-            border-color: var(--primary);
-        }
-
-        .btn {
-            width: 100%;
-            padding: 14px;
+            font-size: 16px;
+            font-weight: bold;
+            color: white;
+            background-color: #007bff;
             border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .btn-login:hover { background-color: #0056b3; }
+
+        /* Panel Principal */
+        .panel-principal {
+            display: none;
+        }
+        .caja-escaner {
+            max-width: 400px;
+            margin: 20px auto;
+            border: 3px solid #333;
+            background-color: #fff;
             border-radius: 8px;
-            font-size: 1rem;
+        }
+        .contenedor-formulario {
+            margin: 20px auto;
+            padding: 20px;
+            max-width: 400px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .opcion-radio {
+            margin: 0 15px;
+            font-size: 18px;
             font-weight: bold;
             cursor: pointer;
-            transition: background 0.2s;
         }
-
-        .btn-primary {
-            background: var(--primary);
-            color: #fff;
+        .opcion-radio input {
+            transform: scale(1.3);
+            margin-right: 5px;
         }
-
-        .btn-danger {
-            background: var(--danger);
-            color: #fff;
+        .selector-tipo {
+            width: 85%;
+            padding: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+            background-color: #fff;
+            color: #333;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+        .campo-placa {
+            width: 80%;
+            padding: 12px;
+            font-size: 22px;
+            font-weight: bold;
+            text-align: center;
+            text-transform: uppercase;
+            margin-top: 15px;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+            color: #007bff;
+            background-color: #e9ecef;
+        }
+        .btn-registrar {
+            width: 85%;
+            padding: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            background-color: #28a745;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
             margin-top: 15px;
         }
-
-        .camera-box {
-            width: 100%;
-            aspect-ratio: 1 / 1;
-            background: #000;
-            border-radius: 12px;
-            position: relative;
-            overflow: hidden;
-            margin-bottom: 20px;
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+        .btn-registrar:hover { background-color: #218838; }
+        
+        .btn-deshacer {
+            display: none;
+            width: 85%;
+            padding: 10px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #666;
+            background-color: #e0e0e0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 15px;
         }
-
-        #reader {
-            width: 100% !important;
-            height: 100% !important;
-            border: none !important;
+        .btn-deshacer:hover {
+            background-color: #dc3545;
+            color: white;
+            border-color: #dc3545;
         }
-
-        #reader video {
-            object-fit: cover !important;
-            width: 100% !important;
-            height: 100% !important;
+        .estado-envio {
+            margin-top: 15px;
+            font-weight: bold;
+            font-size: 16px;
         }
-
-        .scanner-laser {
-            position: absolute;
-            width: 100%;
-            height: 4px;
-            background: var(--danger);
-            top: 0;
-            box-shadow: 0 0 10px var(--danger);
-            animation: scan 2s linear infinite;
-            z-index: 100;
-            pointer-events: none;
-        }
-
-        @keyframes scan {
-            0% { top: 0%; }
-            50% { top: 100%; }
-            100% { top: 0%; }
+        .usuario-activo {
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 10px;
         }
     </style>
 </head>
 <body>
 
-    <div class="auth-container" id="loginSection">
-        <h1>Iniciar Sesión</h1>
-        <p>Control de Accesos Privado</p>
-        <div class="form-group">
-            <label for="username">Usuario</label>
-            <input type="text" id="username" placeholder="Ingresa tu usuario">
-        </div>
-        <div class="form-group">
-            <label for="password">Contraseña</label>
-            <input type="password" id="password" placeholder="Ingresa tu contraseña">
-        </div>
-        <button class="btn btn-primary" onclick="validarAcceso()">Ingresar</button>
+    <div id="pantalla-login" class="contenedor-login">
+        <h2>Control de Autobuses</h2>
+        <p>Inicia sesión para continuar</p>
+        <div id="error-login" style="color: red; font-weight: bold; margin-bottom: 10px;"></div>
+        
+        <input type="text" id="usuario" class="input-login" placeholder="Usuario">
+        <input type="password" id="contrasena" class="input-login" placeholder="Contraseña">
+        
+        <button class="btn-login" onclick="autenticarUsuario()">INGRESAR</button>
     </div>
 
-    <div class="dashboard-container hidden" id="scannerSection">
-        <h1>Escanear Unidad</h1>
-        <p id="dateDisplay">Conectando cámara...</p>
+    <div id="panel-sistema" class="panel-principal">
+        <h1>Control de Flujo de Autobuses</h1>
+        <div class="usuario-activo">Sesión activa: <strong id="nombre-sesion"></strong></div>
         
-        <div class="camera-box">
-            <div id="reader"></div>
-            <div class="scanner-laser" id="laser"></div>
+        <div class="contenedor-formulario">
+            <h3>1. Movimiento:</h3>
+            <label class="opcion-radio">
+                <input type="radio" name="tipoMovimiento" value="ENTRADA" checked> Entrada
+            </label>
+            <label class="opcion-radio">
+                <input type="radio" name="tipoMovimiento" value="SALIDA"> Salida
+            </label>
+
+            <h3>2. Clasificación / Destino:</h3>
+            <select id="tipo-servicio" class="selector-tipo">
+                <option value="RUTA">🚌 RUTA</option>
+                <option value="VIAJE">🗺️ VIAJE</option>
+                <option value="TALLER">🔧 TALLER</option>
+                <option value="APOYO">🤝 APOYO</option>
+                <option value="LAVADO">🧼 LAVADO</option>
+            </select>
+
+            <h3>3. Placa detectada/manual:</h3>
+            <input type="text" id="placa-input" class="campo-placa" placeholder="ESPERANDO QR..." autocomplete="off">
+            
+            <button id="btn-enviar" class="btn-registrar" onclick="enviarDatosAGoogle()">AGREGAR REGISTRO</button>
+            
+            <button id="btn-borrar" class="btn-deshacer" onclick="eliminarUltimoRegistro()">¿Te equivocaste? Deshacer último registro</button>
+            
+            <div id="estado-envio" class="estado-envio"></div>
         </div>
 
-        <button class="btn btn-primary" id="btnAccion" onclick="controlarEscaner()">Iniciar Escáner</button>
+        <p>Apunta la cámara al código QR o escribe la placa manualmente arriba</p>
+        <div id="lector-camara" class="caja-escaner"></div>
     </div>
 
     <script>
-        let html5QrCode;
-        let escanerCorriendo = false;
+        const URL_GOOGLE_SCRIPT = 'https://script.google.com/macros/s/AKfycbypXTYZioHLgtI517yEJ8t6iPov9o7B3e7Ybi0cr8kZLpIErCde4OC0uLXBw5CP-S1c/exec';
+        
+        // Base de datos de credenciales fijas
+        const USUARIOS_VALIDOS = {
+            "admin": { contrasena: "admin123", rol: "ADMIN" },
+            "operador1": { contrasena: "op123", rol: "OPERADOR" },
+            "operador2": { contrasena: "op456", rol: "OPERADOR" },
+            "taller": { contrasena: "taller2026", rol: "OPERADOR" }
+        };
 
-        const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-        document.getElementById('dateDisplay').innerText = new Date().toLocaleDateString('es-ES', dateOptions);
+        let usuarioLogueado = null;
+        let escáner = null;
 
-        function validarAcceso() {
-            const user = document.getElementById('username').value;
-            const pass = document.getElementById('password').value;
+        function autenticarUsuario() {
+            // El nombre de usuario se limpia de espacios y pasa a minúsculas
+            const userIn = document.getElementById('usuario').value.trim().toLowerCase();
+            // La contraseña se lee exactamente como se escribe, quitando solo espacios fantasmas
+            const passIn = document.getElementById('contrasena').value.trim();
+            const divError = document.getElementById('error-login');
 
-            if (user === "admin" && pass === "1234") {
-                document.getElementById('loginSection').classList.add('hidden');
-                document.getElementById('scannerSection').classList.remove('hidden');
-            } else {
-                alert("Credenciales incorrectas");
+            // Validar existencia del usuario antes de comparar la contraseña para evitar errores internos
+            if (USUARIOS_VALIDOS[userIn]) {
+                if (USUARIOS_VALIDOS[userIn].contrasena === passIn) {
+                    usuarioLogueado = USUARIOS_VALIDOS[userIn];
+                    document.getElementById('pantalla-login').style.display = 'none';
+                    document.getElementById('panel-sistema').style.display = 'block';
+                    document.getElementById('nombre-sesion').innerText = `${userIn.toUpperCase()}`;
+
+                    if (usuarioLogueado.rol === "ADMIN") {
+                        document.getElementById('btn-borrar').style.display = 'inline-block';
+                    }
+                    iniciarEscaner();
+                    return; // Login correcto
+                }
+            }
+            
+            // Si no entra al condicional anterior, despliega el error
+            divError.innerText = "Usuario o contraseña incorrectos.";
+        }
+
+        function iniciarEscaner() {
+            escáner = new Html5QrcodeScanner("lector-camara", { fps: 10, qrbox: 250 }, false);
+            escáner.render(lecturaExitosa, lecturaFallida);
+        }
+
+        function lecturaExitosa(textoEscaneado, resultadoDetallado) {
+            const inputPlaca = document.getElementById('placa-input');
+            if (inputPlaca.value !== textoEscaneado) {
+                inputPlaca.value = textoEscaneado.toUpperCase();
+                inputPlaca.style.backgroundColor = "#d4edda";
+                setTimeout(() => { inputPlaca.style.backgroundColor = "#e9ecef"; }, 500);
             }
         }
 
-        function controlarEscaner() {
-            if (!escanerCorriendo) {
-                document.getElementById('laser').style.display = 'block';
-                html5QrCode = new Html5Qrcode("reader");
-                
-                html5QrCode.start(
-                    { facingMode: "environment" },
-                    { fps: 10, qrbox: { width: 250, height: 250 } },
-                    onScanSuccess
-                ).then(() => {
-                    escanerCorriendo = true;
-                    const btn = document.getElementById('btnAccion');
-                    btn.innerText = "Detener Escáner";
-                    btn.className = "btn btn-danger";
-                }).catch(err => {
-                    alert("Error abriendo cámara: Revisa los permisos de tu navegador.");
-                });
-            } else {
-                apagarCamara();
+        function lecturaFallida(error) {}
+
+        function enviarDatosAGoogle() {
+            const inputPlaca = document.getElementById('placa-input');
+            const divEstado = document.getElementById('estado-envio');
+            const boton = document.getElementById('btn-enviar');
+            const selectTipo = document.getElementById('tipo-servicio');
+            const placaTexto = inputPlaca.value.trim();
+
+            if (placaTexto === "" || placaTexto === "ESPERANDO QR...") {
+                divEstado.style.color = "#dc3545";
+                divEstado.innerText = "Por favor, ingresa o escanea una placa.";
+                return;
             }
+
+            const opciones = document.getElementsByName('tipoMovimiento');
+            let movimientoSeleccionado = "";
+            for (const opcion of opciones) {
+                if (opcion.checked) { movimientoSeleccionado = opcion.value; break; }
+            }
+
+            const tipoSeleccionado = selectTipo.value;
+
+            boton.disabled = true;
+            divEstado.style.color = "#ffc107";
+            divEstado.innerText = "Enviando datos...";
+
+            const datosFormulario = new URLSearchParams();
+            datosFormulario.append('accion', 'REGISTRAR');
+            datosFormulario.append('placa', placaTexto);
+            datosFormulario.append('movimiento', movimientoSeleccionado);
+            datosFormulario.append('tipo', tipoSeleccionado);
+
+            fetch(URL_GOOGLE_SCRIPT, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: datosFormulario.toString()
+            })
+            .then(() => {
+                divEstado.style.color = "#28a745";
+                divEstado.innerText = `¡${movimientoSeleccionado} (${tipoSeleccionado}) registrada con éxito!`;
+                inputPlaca.value = ""; 
+            })
+            .catch(error => {
+                divEstado.style.color = "#dc3545";
+                divEstado.innerText = "Error de red.";
+            })
+            .finally(() => {
+                setTimeout(() => { boton.disabled = false; divEstado.innerText = ""; }, 2000);
+            });
         }
 
-        function apagarCamara() {
-            if (html5QrCode) {
-                html5QrCode.stop().then(() => {
-                    escanerCorriendo = false;
-                    document.getElementById('laser').style.display = 'none';
-                    const btn = document.getElementById('btnAccion');
-                    btn.innerText = "Iniciar Escáner";
-                    btn.className = "btn btn-primary";
-                }).catch(err => console.error(err));
-            }
-        }
-
-        function onScanSuccess(decodedText) {
-            apagarCamara();
-
-            let tipoMovimiento = "Entrada";
-            if (decodedText.toLowerCase().includes("salida")) {
-                tipoMovimiento = "Salida";
+        function eliminarUltimoRegistro() {
+            if (!usuarioLogueado || usuarioLogueado.rol !== "ADMIN") {
+                alert("No tienes permisos.");
+                return;
             }
 
-            alert(`Escaneo Exitoso\nUnidad: ${decodedText}\nMovimiento: ${tipoMovimiento}`);
+            const divEstado = document.getElementById('estado-envio');
+            const botonBorrar = document.getElementById('btn-borrar');
 
-            // PEGA AQUÍ TU FUNCIÓN FETCH PARA GOOGLE SHEETS
+            if (!confirm("¿Estás seguro de que deseas eliminar el ÚLTIMO registro de la lista?")) {
+                return; 
+            }
+
+            botonBorrar.disabled = true;
+            divEstado.style.color = "#dc3545";
+            divEstado.innerText = "Eliminando última fila...";
+
+            const datosFormulario = new URLSearchParams();
+            datosFormulario.append('accion', 'ELIMINAR');
+
+            fetch(URL_GOOGLE_SCRIPT, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: datosFormulario.toString()
+            })
+            .then(() => {
+                divEstado.style.color = "#28a745";
+                divEstado.innerText = "¡El último registro fue eliminado exitosamente!";
+            })
+            .catch(error => {
+                divEstado.style.color = "#dc3545";
+                divEstado.innerText = "Error al intentar borrar.";
+            })
+            .finally(() => {
+                setTimeout(() => { botonBorrar.disabled = false; divEstado.innerText = ""; }, 2000);
+            });
         }
     </script>
+
 </body>
 </html>
