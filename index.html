@@ -104,9 +104,7 @@
             box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
         }
 
-        .btn-login:active {
-            transform: translateY(1px);
-        }
+        .btn-login:active { transform: translateY(1px); }
 
         /* --- PANEL PRINCIPAL --- */
         .panel-principal {
@@ -281,7 +279,6 @@
             box-shadow: 0 8px 20px rgba(0,0,0,0.3);
         }
 
-        /* Personalización de los botones nativos del escáner */
         #lector-camara button {
             background-color: #3b82f6 !important;
             color: white !important;
@@ -295,9 +292,7 @@
             box-shadow: 0 2px 6px rgba(59, 130, 246, 0.3) !important;
             transition: background-color 0.2s !important;
         }
-        #lector-camara button:hover {
-            background-color: #1d4ed8 !important;
-        }
+        #lector-camara button:hover { background-color: #1d4ed8 !important; }
     </style>
 </head>
 <body>
@@ -360,13 +355,15 @@
     <script>
         const URL_GOOGLE_SCRIPT = 'https://script.google.com/macros/s/AKfycbypXTYZioHLgtI517yEJ8t6iPov9o7B3e7Ybi0cr8kZLpIErCde4OC0uLXBw5CP-S1c/exec';
         
+        // BASE DE DATOS DE CREDENCIALES ACTUALIZADA
         const USUARIOS_VALIDOS = {
             "admin": { contrasena: "admin123", rol: "ADMIN" },
-            "operador1": { contrasena: "op123", rol: "OPERADOR" },
-            "operador2": { contrasena: "op456", rol: "OPERADOR" },
+            "seguridad1": { contrasena: "seg123", rol: "OPERADOR" },
+            "seguridad2": { contrasena: "seg456", rol: "OPERADOR" },
             "taller": { contrasena: "taller2026", rol: "OPERADOR" }
         };
 
+        let idUsuarioActivo = "";
         let usuarioLogueado = null;
         let escáner = null;
 
@@ -377,10 +374,11 @@
 
             if (USUARIOS_VALIDOS[userIn]) {
                 if (USUARIOS_VALIDOS[userIn].contrasena === passIn) {
+                    idUsuarioActivo = userIn.toUpperCase(); 
                     usuarioLogueado = USUARIOS_VALIDOS[userIn];
                     document.getElementById('pantalla-login').style.display = 'none';
                     document.getElementById('panel-sistema').style.display = 'block';
-                    document.getElementById('nombre-sesion').innerText = `${userIn.toUpperCase()}`;
+                    document.getElementById('nombre-sesion').innerText = idUsuarioActivo;
 
                     if (usuarioLogueado.rol === "ADMIN") {
                         document.getElementById('btn-borrar').style.display = 'inline-block';
@@ -393,22 +391,18 @@
         }
 
         function iniciarEscaner() {
-            // El parámetro 'experimentalFeatures: {useBarCodeDetectorIfSupported: true}' optimiza el rendimiento.
-            // Al omitir configuraciones de archivos locales, bloqueamos nativamente el botón de "Scan an Image File".
             escáner = new Html5QrcodeScanner(
                 "lector-camara", 
                 { 
                     fps: 10, 
                     qrbox: 250,
                     rememberLastUsedCamera: true,
-                    // Esta línea restringe el escáner exclusivamente al flujo de la cámara en vivo
                     supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA]
                 }, 
-                /* verbose= */ false
+                false
             );
             escáner.render(lecturaExitosa, lecturaFallida);
             
-            // Traducción estética rápida de los botones nativos de la librería
             setTimeout(() => {
                 const btnEscaner = document.querySelector('#lector-camara button');
                 if(btnEscaner && btnEscaner.innerText.includes('Request Camera Permissions')) {
@@ -458,6 +452,7 @@
             datosFormulario.append('placa', placaTexto);
             datosFormulario.append('movimiento', movimientoSeleccionado);
             datosFormulario.append('tipo', tipoSeleccionado);
+            datosFormulario.append('operador', idUsuarioActivo);
 
             fetch(URL_GOOGLE_SCRIPT, {
                 method: 'POST',
