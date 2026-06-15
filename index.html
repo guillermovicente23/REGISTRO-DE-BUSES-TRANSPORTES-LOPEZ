@@ -8,138 +8,287 @@
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 
     <style>
+        /* --- ESTILOS GENERALES Y FONDO --- */
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             text-align: center;
-            background-color: #f0f0f0;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            color: #334155;
             padding: 20px;
+            margin: 0;
+            min-height: 100vh;
         }
-        /* Pantalla de Login */
+
+        h1 {
+            color: #f8fafc;
+            font-size: 26px;
+            font-weight: 700;
+            margin-top: 20px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        h3 {
+            font-size: 16px;
+            color: #475569;
+            margin-bottom: 10px;
+            margin-top: 5px;
+            text-align: left;
+            border-left: 4px solid #3b82f6;
+            padding-left: 8px;
+        }
+
+        p {
+            color: #94a3b8;
+            font-size: 14px;
+        }
+
+        /* --- PANTALLA DE LOGIN --- */
         .contenedor-login {
-            max-width: 350px;
-            margin: 60px auto;
-            padding: 30px;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            max-width: 360px;
+            margin: 80px auto;
+            padding: 35px 25px;
+            background-color: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
+
+        .contenedor-login h2 {
+            margin-top: 0;
+            color: #1e293b;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .contenedor-login p {
+            color: #64748b;
+            margin-bottom: 25px;
+        }
+
         .input-login {
             width: 90%;
-            padding: 10px;
+            padding: 12px;
             margin: 10px 0;
             font-size: 16px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            background-color: #f8fafc;
+            color: #1e293b;
+            transition: all 0.3s ease;
         }
+
+        .input-login:focus {
+            border-color: #3b82f6;
+            background-color: #ffffff;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+            outline: none;
+        }
+
         .btn-login {
-            width: 96%;
-            padding: 12px;
+            width: 98%;
+            padding: 14px;
             font-size: 16px;
             font-weight: bold;
             color: white;
-            background-color: #007bff;
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
             cursor: pointer;
-            margin-top: 10px;
+            margin-top: 15px;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+            transition: all 0.2s ease;
         }
-        .btn-login:hover { background-color: #0056b3; }
 
-        /* Panel Principal */
+        .btn-login:hover { 
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-login:active {
+            transform: translateY(1px);
+        }
+
+        /* --- PANEL PRINCIPAL --- */
         .panel-principal {
             display: none;
+            animation: fadeIn 0.5s ease-in-out;
         }
-        .caja-escaner {
-            max-width: 400px;
-            margin: 20px auto;
-            border: 3px solid #333;
-            background-color: #fff;
-            border-radius: 8px;
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-        .contenedor-formulario {
-            margin: 20px auto;
-            padding: 20px;
-            max-width: 400px;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .opcion-radio {
-            margin: 0 15px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        .opcion-radio input {
-            transform: scale(1.3);
-            margin-right: 5px;
-        }
-        .selector-tipo {
-            width: 85%;
-            padding: 12px;
-            font-size: 18px;
-            font-weight: bold;
-            border: 2px solid #ccc;
-            border-radius: 5px;
-            background-color: #fff;
-            color: #333;
-            margin-top: 10px;
-            cursor: pointer;
-        }
-        .campo-placa {
-            width: 80%;
-            padding: 12px;
-            font-size: 22px;
-            font-weight: bold;
-            text-align: center;
-            text-transform: uppercase;
-            margin-top: 15px;
-            border: 2px solid #ccc;
-            border-radius: 5px;
-            color: #007bff;
-            background-color: #e9ecef;
-        }
-        .btn-registrar {
-            width: 85%;
-            padding: 15px;
-            font-size: 18px;
-            font-weight: bold;
-            color: white;
-            background-color: #28a745;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 15px;
-        }
-        .btn-registrar:hover { background-color: #218838; }
-        
-        .btn-deshacer {
-            display: none;
-            width: 85%;
-            padding: 10px;
-            font-size: 14px;
-            font-weight: bold;
-            color: #666;
-            background-color: #e0e0e0;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 15px;
-        }
-        .btn-deshacer:hover {
-            background-color: #dc3545;
-            color: white;
-            border-color: #dc3545;
-        }
-        .estado-envio {
-            margin-top: 15px;
-            font-weight: bold;
-            font-size: 16px;
-        }
+
         .usuario-activo {
             font-size: 14px;
-            color: #555;
-            margin-bottom: 10px;
+            color: #cbd5e1;
+            background-color: rgba(255, 255, 255, 0.05);
+            padding: 8px 16px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .usuario-activo strong {
+            color: #3b82f6;
+        }
+
+        /* --- FORMULARIO DE REGISTRO --- */
+        .contenedor-formulario {
+            margin: 20px auto;
+            padding: 25px;
+            max-width: 400px;
+            background-color: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+        }
+
+        /* Bloques de sección interna */
+        .seccion-bloque {
+            background-color: #f8fafc;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #edf2f7;
+        }
+
+        /* Contenedor de Radios de Movimiento */
+        .contenedor-radios {
+            display: flex;
+            justify-content: space-around;
+            padding: 5px 0;
+        }
+
+        .opcion-radio {
+            font-size: 16px;
+            font-weight: 600;
+            color: #475569;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            background-color: #ffffff;
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: 2px solid #e2e8f0;
+            transition: all 0.2s ease;
+            width: 40%;
+            justify-content: center;
+        }
+
+        .opcion-radio input {
+            transform: scale(1.2);
+            margin-right: 8px;
+            cursor: pointer;
+        }
+
+        /* Efecto cuando el radio interno está seleccionado (manejado visualmente) */
+        .opcion-radio:hover {
+            border-color: #cbd5e1;
+            background-color: #f1f5f9;
+        }
+
+        /* Selector de Tipo Dropdown */
+        .selector-tipo {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            background-color: #ffffff;
+            color: #1e293b;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .selector-tipo:focus {
+            border-color: #3b82f6;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+
+        /* Input de la Placa */
+        .campo-placa {
+            width: 90%;
+            padding: 14px;
+            font-size: 24px;
+            font-weight: 800;
+            text-align: center;
+            text-transform: uppercase;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            color: #1e3a8a;
+            background-color: #f1f5f9;
+            letter-spacing: 2px;
+            transition: all 0.3s ease;
+        }
+
+        /* Botón de Enviar (Registrar) */
+        .btn-registrar {
+            width: 100%;
+            padding: 16px;
+            font-size: 18px;
+            font-weight: 700;
+            color: white;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 10px;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+            transition: all 0.2s ease;
+        }
+
+        .btn-registrar:hover { 
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-registrar:active {
+            transform: scale(0.99);
+        }
+
+        /* Botón Deshacer */
+        .btn-deshacer {
+            display: none;
+            width: 100%;
+            padding: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #64748b;
+            background-color: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-deshacer:hover {
+            background-color: #fee2e2;
+            color: #ef4444;
+            border-color: #fca5a5;
+        }
+
+        /* Estados Dinámicos */
+        .estado-envio {
+            margin-top: 15px;
+            font-weight: 700;
+            font-size: 15px;
+            padding: 8px;
+            border-radius: 6px;
+        }
+
+        /* --- CAJA DEL ESCÁNER CÁMARA --- */
+        .caja-escaner {
+            max-width: 400px;
+            margin: 25px auto;
+            border: 4px solid #1e293b;
+            background-color: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
         }
     </style>
 </head>
@@ -148,7 +297,7 @@
     <div id="pantalla-login" class="contenedor-login">
         <h2>Control de Autobuses</h2>
         <p>Inicia sesión para continuar</p>
-        <div id="error-login" style="color: red; font-weight: bold; margin-bottom: 10px;"></div>
+        <div id="error-login" style="color: #ef4444; font-weight: bold; margin-bottom: 15px; font-size: 14px;"></div>
         
         <input type="text" id="usuario" class="input-login" placeholder="Usuario">
         <input type="password" id="contrasena" class="input-login" placeholder="Contraseña">
@@ -161,25 +310,33 @@
         <div class="usuario-activo">Sesión activa: <strong id="nombre-sesion"></strong></div>
         
         <div class="contenedor-formulario">
-            <h3>1. Movimiento:</h3>
-            <label class="opcion-radio">
-                <input type="radio" name="tipoMovimiento" value="ENTRADA" checked> Entrada
-            </label>
-            <label class="opcion-radio">
-                <input type="radio" name="tipoMovimiento" value="SALIDA"> Salida
-            </label>
+            <div class="seccion-bloque">
+                <h3>1. Movimiento:</h3>
+                <div class="contenedor-radios">
+                    <label class="opcion-radio">
+                        <input type="radio" name="tipoMovimiento" value="ENTRADA" checked> Entrada
+                    </label>
+                    <label class="opcion-radio">
+                        <input type="radio" name="tipoMovimiento" value="SALIDA"> Salida
+                    </label>
+                </div>
+            </div>
 
-            <h3>2. Clasificación / Destino:</h3>
-            <select id="tipo-servicio" class="selector-tipo">
-                <option value="RUTA">🚌 RUTA</option>
-                <option value="VIAJE">🗺️ VIAJE</option>
-                <option value="TALLER">🔧 TALLER</option>
-                <option value="APOYO">🤝 APOYO</option>
-                <option value="LAVADO">🧼 LAVADO</option>
-            </select>
+            <div class="seccion-bloque">
+                <h3>2. Clasificación / Destino:</h3>
+                <select id="tipo-servicio" class="selector-tipo">
+                    <option value="RUTA">🚌 RUTA</option>
+                    <option value="VIAJE">🗺️ VIAJE</option>
+                    <option value="TALLER">🔧 TALLER</option>
+                    <option value="APOYO">🤝 APOYO</option>
+                    <option value="LAVADO">🧼 LAVADO</option>
+                </select>
+            </div>
 
-            <h3>3. Placa detectada/manual:</h3>
-            <input type="text" id="placa-input" class="campo-placa" placeholder="ESPERANDO QR..." autocomplete="off">
+            <div class="seccion-bloque">
+                <h3>3. Placa detectada/manual:</h3>
+                <input type="text" id="placa-input" class="campo-placa" placeholder="ESPERANDO QR..." autocomplete="off">
+            </div>
             
             <button id="btn-enviar" class="btn-registrar" onclick="enviarDatosAGoogle()">AGREGAR REGISTRO</button>
             
@@ -271,7 +428,7 @@
             const tipoSeleccionado = selectTipo.value;
 
             boton.disabled = true;
-            divEstado.style.color = "#ffc107";
+            divEstado.style.color = "#d97706";
             divEstado.innerText = "Enviando datos...";
 
             const datosFormulario = new URLSearchParams();
@@ -287,7 +444,7 @@
                 body: datosFormulario.toString()
             })
             .then(() => {
-                divEstado.style.color = "#28a745";
+                divEstado.style.color = "#059669";
                 divEstado.innerText = `¡${movimientoSeleccionado} (${tipoSeleccionado}) registrada con éxito!`;
                 inputPlaca.value = ""; 
             })
@@ -327,7 +484,7 @@
                 body: datosFormulario.toString()
             })
             .then(() => {
-                divEstado.style.color = "#28a745";
+                divEstado.style.color = "#059669";
                 divEstado.innerText = "¡El último registro fue eliminado exitosamente!";
             })
             .catch(error => {
