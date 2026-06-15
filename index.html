@@ -144,7 +144,6 @@
             box-shadow: 0 10px 25px rgba(0,0,0,0.25);
         }
 
-        /* Bloques de sección interna */
         .seccion-bloque {
             background-color: #f8fafc;
             padding: 15px;
@@ -153,7 +152,6 @@
             border: 1px solid #edf2f7;
         }
 
-        /* Contenedor de Radios de Movimiento */
         .contenedor-radios {
             display: flex;
             justify-content: space-around;
@@ -182,13 +180,11 @@
             cursor: pointer;
         }
 
-        /* Efecto cuando el radio interno está seleccionado (manejado visualmente) */
         .opcion-radio:hover {
             border-color: #cbd5e1;
             background-color: #f1f5f9;
         }
 
-        /* Selector de Tipo Dropdown */
         .selector-tipo {
             width: 100%;
             padding: 12px;
@@ -208,7 +204,6 @@
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
         }
 
-        /* Input de la Placa */
         .campo-placa {
             width: 90%;
             padding: 14px;
@@ -224,7 +219,6 @@
             transition: all 0.3s ease;
         }
 
-        /* Botón de Enviar (Registrar) */
         .btn-registrar {
             width: 100%;
             padding: 16px;
@@ -245,11 +239,8 @@
             box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
         }
 
-        .btn-registrar:active {
-            transform: scale(0.99);
-        }
+        .btn-registrar:active { transform: scale(0.99); }
 
-        /* Botón Deshacer */
         .btn-deshacer {
             display: none;
             width: 100%;
@@ -271,7 +262,6 @@
             border-color: #fca5a5;
         }
 
-        /* Estados Dinámicos */
         .estado-envio {
             margin-top: 15px;
             font-weight: 700;
@@ -289,6 +279,24 @@
             border-radius: 12px;
             overflow: hidden;
             box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+
+        /* Personalización de los botones nativos del escáner */
+        #lector-camara button {
+            background-color: #3b82f6 !important;
+            color: white !important;
+            border: none !important;
+            padding: 10px 20px !important;
+            font-size: 14px !important;
+            font-weight: bold !important;
+            border-radius: 6px !important;
+            cursor: pointer !important;
+            margin: 10px 0 !important;
+            box-shadow: 0 2px 6px rgba(59, 130, 246, 0.3) !important;
+            transition: background-color 0.2s !important;
+        }
+        #lector-camara button:hover {
+            background-color: #1d4ed8 !important;
         }
     </style>
 </head>
@@ -352,7 +360,6 @@
     <script>
         const URL_GOOGLE_SCRIPT = 'https://script.google.com/macros/s/AKfycbypXTYZioHLgtI517yEJ8t6iPov9o7B3e7Ybi0cr8kZLpIErCde4OC0uLXBw5CP-S1c/exec';
         
-        // Base de datos de credenciales fijas
         const USUARIOS_VALIDOS = {
             "admin": { contrasena: "admin123", rol: "ADMIN" },
             "operador1": { contrasena: "op123", rol: "OPERADOR" },
@@ -364,13 +371,10 @@
         let escáner = null;
 
         function autenticarUsuario() {
-            // El nombre de usuario se limpia de espacios y pasa a minúsculas
             const userIn = document.getElementById('usuario').value.trim().toLowerCase();
-            // La contraseña se lee exactamente como se escribe, quitando solo espacios fantasmas
             const passIn = document.getElementById('contrasena').value.trim();
             const divError = document.getElementById('error-login');
 
-            // Validar existencia del usuario antes de comparar la contraseña para evitar errores internos
             if (USUARIOS_VALIDOS[userIn]) {
                 if (USUARIOS_VALIDOS[userIn].contrasena === passIn) {
                     usuarioLogueado = USUARIOS_VALIDOS[userIn];
@@ -382,17 +386,35 @@
                         document.getElementById('btn-borrar').style.display = 'inline-block';
                     }
                     iniciarEscaner();
-                    return; // Login correcto
+                    return; 
                 }
             }
-            
-            // Si no entra al condicional anterior, despliega el error
             divError.innerText = "Usuario o contraseña incorrectos.";
         }
 
         function iniciarEscaner() {
-            escáner = new Html5QrcodeScanner("lector-camara", { fps: 10, qrbox: 250 }, false);
+            // El parámetro 'experimentalFeatures: {useBarCodeDetectorIfSupported: true}' optimiza el rendimiento.
+            // Al omitir configuraciones de archivos locales, bloqueamos nativamente el botón de "Scan an Image File".
+            escáner = new Html5QrcodeScanner(
+                "lector-camara", 
+                { 
+                    fps: 10, 
+                    qrbox: 250,
+                    rememberLastUsedCamera: true,
+                    // Esta línea restringe el escáner exclusivamente al flujo de la cámara en vivo
+                    supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA]
+                }, 
+                /* verbose= */ false
+            );
             escáner.render(lecturaExitosa, lecturaFallida);
+            
+            // Traducción estética rápida de los botones nativos de la librería
+            setTimeout(() => {
+                const btnEscaner = document.querySelector('#lector-camara button');
+                if(btnEscaner && btnEscaner.innerText.includes('Request Camera Permissions')) {
+                    btnEscaner.innerText = 'Activar Cámara de Monitoreo';
+                }
+            }, 300);
         }
 
         function lecturaExitosa(textoEscaneado, resultadoDetallado) {
