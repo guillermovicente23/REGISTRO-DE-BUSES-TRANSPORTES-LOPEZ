@@ -328,6 +328,13 @@
             <div class="seccion-bloque">
                 <h3>2. Clasificación / Destino:</h3>
                 <select id="tipo-servicio" class="selector-tipo">
+                    <option value="PREDIO CAÑAL">🌾 PREDIO CAÑAL</option>
+                    <option value="INGENIO MAGDALENA">🏭 INGENIO MAGDALENA</option>
+                    <option value="PROBAR BUS">⚙️ PROBAR BUS</option>
+                    <option value="ELECTROMECANICA">⚡ ELECTROMECANICA</option>
+                    <option value="SERVICIO GRUA">🚨 SERVICIO GRUA</option>
+                    <option value="FULEO">⛽ FULEO</option>
+                    
                     <option value="RUTA">🚌 RUTA</option>
                     <option value="VIAJE">🗺️ VIAJE</option>
                     <option value="TALLER">🔧 TALLER</option>
@@ -355,7 +362,7 @@
     <script>
         const URL_GOOGLE_SCRIPT = 'https://script.google.com/macros/s/AKfycbypXTYZioHLgtI517yEJ8t6iPov9o7B3e7Ybi0cr8kZLpIErCde4OC0uLXBw5CP-S1c/exec';
         
-        // BASE DE DATOS DE CREDENCIALES ACTUALIZADA
+        // BASE DE DATOS DE CREDENCIALES
         const USUARIOS_VALIDOS = {
             "admin": { contrasena: "admin123", rol: "ADMIN" },
             "seguridad1": { contrasena: "seg123", rol: "OPERADOR" },
@@ -365,7 +372,7 @@
 
         let idUsuarioActivo = "";
         let usuarioLogueado = null;
-        let escáner = null;
+        let escaner = null;
 
         function autenticarUsuario() {
             const userIn = document.getElementById('usuario').value.trim().toLowerCase();
@@ -391,17 +398,17 @@
         }
 
         function iniciarEscaner() {
-            escáner = new Html5QrcodeScanner(
+            escaner = new Html5QrcodeScanner(
                 "lector-camara", 
                 { 
                     fps: 10, 
-                    qrbox: 250,
+                    qrbox: { width: 250, height: 250 },
                     rememberLastUsedCamera: true,
-                    supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA]
+                    supportedScanTypes: [0] 
                 }, 
                 false
             );
-            escáner.render(lecturaExitosa, lecturaFallida);
+            escaner.render(lecturaExitosa, lecturaFallida);
             
             setTimeout(() => {
                 const btnEscaner = document.querySelector('#lector-camara button');
@@ -416,7 +423,7 @@
             if (inputPlaca.value !== textoEscaneado) {
                 inputPlaca.value = textoEscaneado.toUpperCase();
                 inputPlaca.style.backgroundColor = "#d4edda";
-                setTimeout(() => { inputPlaca.style.backgroundColor = "#e9ecef"; }, 500);
+                setTimeout(() => { inputPlaca.style.backgroundColor = "#f1f5f9"; }, 500);
             }
         }
 
@@ -464,6 +471,7 @@
                 divEstado.style.color = "#059669";
                 divEstado.innerText = `¡${movimientoSeleccionado} (${tipoSeleccionado}) registrada con éxito!`;
                 inputPlaca.value = ""; 
+                inputPlaca.blur(); 
             })
             .catch(error => {
                 divEstado.style.color = "#dc3545";
