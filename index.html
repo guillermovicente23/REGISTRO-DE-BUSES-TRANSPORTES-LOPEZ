@@ -202,6 +202,25 @@
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
         }
 
+        .campo-texto {
+            width: 90%;
+            padding: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            text-align: center;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            color: #1e293b;
+            background-color: #ffffff;
+            transition: all 0.3s ease;
+        }
+
+        .campo-texto:focus {
+            border-color: #3b82f6;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+
         .campo-placa {
             width: 90%;
             padding: 14px;
@@ -343,8 +362,14 @@
                 </select>
             </div>
 
+            <!-- NUEVO BLOQUE: PILOTO -->
             <div class="seccion-bloque">
-                <h3>3. Placa detectada/manual:</h3>
+                <h3>3. Piloto / Conductor:</h3>
+                <input type="text" id="piloto-input" class="campo-texto" placeholder="Nombre del piloto..." autocomplete="off">
+            </div>
+
+            <div class="seccion-bloque">
+                <h3>4. Placa detectada/manual:</h3>
                 <input type="text" id="placa-input" class="campo-placa" placeholder="ESPERANDO QR..." autocomplete="off">
             </div>
             
@@ -360,7 +385,8 @@
     </div>
 
     <script>
-const URL_GOOGLE_SCRIPT = 'https://script.google.com/macros/s/AKfycbypXTYZioHLgtI517yEJ8t6iPov9o7B3e7Ybi0cr8kZLpIErCde4OC0uLXBw5CP-S1c/exec';        
+        const URL_GOOGLE_SCRIPT = 'https://script.google.com/macros/s/AKfycbypXTYZioHLgtI517yEJ8t6iPov9o7B3e7Ybi0cr8kZLpIErCde4OC0uLXBw5CP-S1c/exec';        
+        
         // BASE DE DATOS DE CREDENCIALES
         const USUARIOS_VALIDOS = {
             "admin": { contrasena: "admin123", rol: "ADMIN" },
@@ -430,10 +456,13 @@ const URL_GOOGLE_SCRIPT = 'https://script.google.com/macros/s/AKfycbypXTYZioHLgt
 
         function enviarDatosAGoogle() {
             const inputPlaca = document.getElementById('placa-input');
+            const inputPiloto = document.getElementById('piloto-input');
             const divEstado = document.getElementById('estado-envio');
             const boton = document.getElementById('btn-enviar');
             const selectTipo = document.getElementById('tipo-servicio');
+            
             const placaTexto = inputPlaca.value.trim();
+            const pilotoTexto = inputPiloto.value.trim();
 
             if (placaTexto === "" || placaTexto === "ESPERANDO QR...") {
                 divEstado.style.color = "#dc3545";
@@ -458,6 +487,7 @@ const URL_GOOGLE_SCRIPT = 'https://script.google.com/macros/s/AKfycbypXTYZioHLgt
             datosFormulario.append('placa', placaTexto);
             datosFormulario.append('movimiento', movimientoSeleccionado);
             datosFormulario.append('tipo', tipoSeleccionado);
+            datosFormulario.append('piloto', pilotoTexto !== "" ? pilotoTexto : "NO ESPECIFICADO"); // <--- ENVIAR PILOTO
             datosFormulario.append('operador', idUsuarioActivo);
 
             fetch(URL_GOOGLE_SCRIPT, {
@@ -470,6 +500,7 @@ const URL_GOOGLE_SCRIPT = 'https://script.google.com/macros/s/AKfycbypXTYZioHLgt
                 divEstado.style.color = "#059669";
                 divEstado.innerText = `¡${movimientoSeleccionado} (${tipoSeleccionado}) registrada con éxito!`;
                 inputPlaca.value = ""; 
+                inputPiloto.value = ""; // Limpiar campo de piloto
                 inputPlaca.blur(); 
             })
             .catch(error => {
